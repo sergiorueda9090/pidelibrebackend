@@ -1,117 +1,47 @@
 from rest_framework import serializers
-from category.models import Category
+from attribute.models import Attribute
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    image  = serializers.ImageField(required=False, allow_null=True)
-    parent = serializers.PrimaryKeyRelatedField(
-                queryset=Category.objects.all(),
-                required=False,
-                allow_null=True
-             )
+class AttributeSerializer(serializers.ModelSerializer):
+    """Usado en creación."""
 
     class Meta:
-        model  = Category
-        fields = [
-            'name', 'slug', 'image', 'parent',
-            'is_active', 'order', 'meta_title', 'meta_description',
-        ]
+        model  = Attribute
+        fields = ['name']
 
-    def validate_slug(self, value):
-        if Category.objects.filter(slug=value).exists():
-            raise serializers.ValidationError("This slug already exists.")
+    def validate_name(self, value):
+        if Attribute.objects.filter(name__iexact=value).exists():
+            raise serializers.ValidationError("An attribute with this name already exists.")
         return value
 
-    def create(self, validated_data):
-        image = validated_data.pop('image', None)
-        category = Category.objects.create(**validated_data)
-        if image:
-            category.image = image
-            category.save()
-        return category
 
-
-class CategoryListSerializer(serializers.ModelSerializer):
-    image  = serializers.SerializerMethodField()
-    parent = serializers.SerializerMethodField()
+class AttributeListSerializer(serializers.ModelSerializer):
+    """Usado en el listado paginado."""
 
     class Meta:
-        model  = Category
-        fields = [
-            'id', 'name', 'slug', 'image', 'parent',
-            'is_active', 'order', 'deleted_at', 'created_at',
-        ]
-
-    def get_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
-
-    def get_parent(self, obj):
-        if obj.parent:
-            return {'id': obj.parent.id, 'name': obj.parent.name}
-        return None
+        model  = Attribute
+        fields = ['id', 'name', 'created_at', 'deleted_at']
 
 
-class CategoryDetailSerializer(serializers.ModelSerializer):
-    image    = serializers.SerializerMethodField()
-    parent   = serializers.SerializerMethodField()
-    children = serializers.SerializerMethodField()
-    user       = serializers.SerializerMethodField()
-    updated_by = serializers.SerializerMethodField()
-    deleted_by = serializers.SerializerMethodField()
+class AttributeDetailSerializer(serializers.ModelSerializer):
+    """Usado en create/get-by-id para devolver el registro completo."""
 
     class Meta:
-        model  = Category
-        fields = [
-            'id', 'user', 'name', 'slug', 'image', 'parent', 'children',
-            'is_active', 'order', 'meta_title', 'meta_description',
-            'updated_by', 'deleted_by',
-            'created_at', 'updated_at', 'deleted_at',
-        ]
-
-    def get_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
-
-    def get_parent(self, obj):
-        if obj.parent:
-            return {'id': obj.parent.id, 'name': obj.parent.name}
-        return None
-
-    def get_children(self, obj):
-        qs = obj.children.filter(deleted_at__isnull=True)
-        return [{'id': c.id, 'name': c.name, 'slug': c.slug} for c in qs]
-
-    def get_user(self, obj):
-        return {'id': obj.user.id, 'username': obj.user.username}
-
-    def get_updated_by(self, obj):
-        if obj.updated_by:
-            return {'id': obj.updated_by.id, 'username': obj.updated_by.username}
-        return None
-
-    def get_deleted_by(self, obj):
-        if obj.deleted_by:
-            return {'id': obj.deleted_by.id, 'username': obj.deleted_by.username}
-        return None
+        model  = Attribute
+        fields = ['id', 'name', 'created_at', 'updated_at', 'deleted_at']
 
 
-class CategoryUpdateSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(required=False, allow_null=True)
+class AttributeUpdateSerializer(serializers.ModelSerializer):
+    """Usado en actualización parcial."""
 
     class Meta:
-        model  = Category
-        fields = [
-            'name', 'slug', 'image', 'parent',
-            'is_active', 'order', 'meta_title', 'meta_description',
-        ]
+        model  = Attribute
+        fields = ['name']
 
-    def validate_slug(self, value):
-        qs = Category.objects.filter(slug=value).exclude(pk=self.instance.pk)
+    def validate_name(self, value):
+        qs = Attribute.objects.filter(name__iexact=value).exclude(pk=self.instance.pk)
         if qs.exists():
-            raise serializers.ValidationError("This slug already exists.")
+            raise serializers.ValidationError("An attribute with this name already exists.")
         return value
 
     def update(self, instance, validated_data):

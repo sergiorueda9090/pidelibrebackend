@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/',          TokenObtainPairView.as_view(),  name='token_obtain_pair'),
     path('api/token/refresh/',  TokenRefreshView.as_view(),     name='token_refresh'),
-    path('api/user/',     include('user.api.urls')),
-    path('api/category/', include('category.api.urls')),
+    path('api/user/',     include('user.api.urls') , name='user_api'),
+    path('api/category/', include('category.api.urls'), name='category_api'),
+    path('api/attribute/', include('attribute.api.urls'), name='attribute_api'),
 ]
