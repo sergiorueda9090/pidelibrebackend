@@ -1,0 +1,165 @@
+{% load static %}
+<!-- offcanvas area start -->
+<div class="offcanvas__area offcanvas__radius">
+   <div class="offcanvas__wrapper">
+      <div class="offcanvas__close">
+         <button class="offcanvas__close-btn offcanvas-close-btn">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+               <path d="M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+               <path d="M1 1L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+         </button>
+      </div>
+      <div class="offcanvas__content">
+         <div class="offcanvas__top mb-70 d-flex justify-content-between align-items-center">
+            <div class="offcanvas__logo logo">
+               <a href="{% url 'store:home' %}">
+                  <img src="{% static 'img/logo/logo.svg' %}" alt="logo">
+               </a>
+            </div>
+         </div>
+         <div class="offcanvas__category pb-40">
+            <button class="tp-offcanvas-category-toggle">
+               <i class="fa-solid fa-bars"></i>
+               Todas las Categorías
+            </button>
+            <div class="tp-category-mobile-menu">
+               {% for category in categories %}
+               <a href="#">{{ category.name }}</a>
+               {% endfor %}
+            </div>
+         </div>
+         <div class="tp-main-menu-mobile fix d-lg-none mb-40"></div>
+         <div class="offcanvas__btn">
+            <a href="#" class="tp-btn-2 tp-btn-border-2">Contáctanos</a>
+         </div>
+      </div>
+      <div class="offcanvas__bottom">
+         <div class="offcanvas__footer d-flex align-items-center justify-content-between">
+            <div class="offcanvas__select language">
+               <div class="offcanvas__lang d-flex align-items-center justify-content-md-end">
+                  <div class="offcanvas__lang-img mr-15">
+                     <img src="{% static 'img/icon/language-flag.png' %}" alt="">
+                  </div>
+                  <div class="offcanvas__lang-wrapper">
+                     <span class="offcanvas__lang-selected-lang tp-lang-toggle" id="tp-offcanvas-lang-toggle">Español</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<div class="body-overlay"></div>
+<!-- offcanvas area end -->
+
+<!-- mobile menu area start -->
+<div id="tp-bottom-menu-sticky" class="tp-mobile-menu d-lg-none">
+   <div class="container">
+      <div class="row row-cols-5">
+         <div class="col">
+            <div class="tp-mobile-item text-center">
+               <a href="#" class="tp-mobile-item-btn">
+                  <i class="flaticon-store"></i>
+                  <span>Tienda</span>
+               </a>
+            </div>
+         </div>
+         <div class="col">
+            <div class="tp-mobile-item text-center">
+               <button class="tp-mobile-item-btn tp-search-open-btn">
+                  <i class="flaticon-search-1"></i>
+                  <span>Buscar</span>
+               </button>
+            </div>
+         </div>
+         <div class="col">
+            <div class="tp-mobile-item text-center">
+               <a href="#" class="tp-mobile-item-btn">
+                  <i class="flaticon-love"></i>
+                  <span>Favoritos</span>
+               </a>
+            </div>
+         </div>
+         <div class="col">
+            <div class="tp-mobile-item text-center">
+               <a href="#" class="tp-mobile-item-btn">
+                  <i class="flaticon-user"></i>
+                  <span>Cuenta</span>
+               </a>
+            </div>
+         </div>
+         <div class="col">
+            <div class="tp-mobile-item text-center">
+               <button class="tp-mobile-item-btn tp-offcanvas-open-btn">
+                  <i class="flaticon-menu-1"></i>
+                  <span>Menú</span>
+               </button>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<!-- mobile menu area end -->
+
+<!-- search area start -->
+<section class="tp-search-area">
+   <div class="container">
+      <div class="row">
+         <div class="col-xl-12">
+            <div class="tp-search-form">
+               <div class="tp-search-close text-center mb-20">
+                  <button class="tp-search-close-btn tp-search-close-btn"></button>
+               </div>
+               <form action="#">
+                  <div class="tp-search-input mb-10">
+                     <input type="text" placeholder="Buscar productos...">
+                     <button type="submit"><i class="flaticon-search-1"></i></button>
+                  </div>
+                  <div class="tp-search-category">
+                     <span>Buscar por: </span>
+                     {% for category in categories %}
+                     <a href="#">{{ category.name }}{% if not forloop.last %}, {% endif %}</a>
+                     {% endfor %}
+                  </div>
+               </form>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+<!-- search area end -->
+
+<!-- cart mini area start -->
+<div class="cartmini__area tp-all-font-roboto">
+   <div class="cartmini__wrapper d-flex justify-content-between flex-column">
+      <div class="cartmini__top-wrapper">
+         <div class="cartmini__top p-relative">
+            <div class="cartmini__top-title">
+               <h4>Carrito de compras</h4>
+            </div>
+            <div class="cartmini__close">
+               <button type="button" class="cartmini__close-btn cartmini-close-btn"><i class="fal fa-times"></i></button>
+            </div>
+         </div>
+         <div class="cartmini__widget">
+            <div class="cartmini__empty text-center">
+               <img src="{% static 'img/product/cartmini/empty-cart.png' %}" alt="">
+               <p>Tu carrito está vacío</p>
+               <a href="#" class="tp-btn">Ir a la Tienda</a>
+            </div>
+         </div>
+      </div>
+      <div class="cartmini__checkout">
+         <div class="cartmini__checkout-title mb-30">
+            <h4>Subtotal:</h4>
+            <span>$0.00</span>
+         </div>
+         <div class="cartmini__checkout-btn">
+            <a href="#" class="tp-btn mb-10 w-100">Ver carrito</a>
+            <a href="#" class="tp-btn tp-btn-border w-100">Checkout</a>
+         </div>
+      </div>
+   </div>
+</div>
+<!-- cart mini area end -->

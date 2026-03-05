@@ -1,0 +1,1024 @@
+{% extends "store/base.html" %}
+{% load static %}
+{% load currency_filters %}
+
+{% block title %}{{ product.name }} – pidelibre{% endblock %}
+{% block meta_description %}{{ product.meta_description|default:product.short_description|truncatewords:30 }}{% endblock %}
+
+{% block extra_css %}
+<style>
+   /* Evitar desborde en descripción corta (sidebar) */
+   .tp-product-details-wrapper > p {
+      overflow: hidden;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+   }
+   /* Evitar desborde en descripción completa (tab) */
+   .tp-product-details-desc-item {
+      overflow: hidden;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+   }
+   .tp-product-details-desc-item img {
+      max-width: 100%;
+      height: auto;
+   }
+   .tp-product-details-desc-item table {
+      max-width: 100%;
+      overflow-x: auto;
+      display: block;
+   }
+   .tp-product-details-desc-item iframe,
+   .tp-product-details-desc-item video,
+   .tp-product-details-desc-item embed,
+   .tp-product-details-desc-item object {
+      max-width: 100%;
+   }
+   .tp-product-details-desc-item pre,
+   .tp-product-details-desc-item code {
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-width: 100%;
+   }
+   /* Efecto lupa / zoom */
+   .tp-zoom {
+      position: relative;
+      overflow: hidden;
+      cursor: crosshair;
+   }
+   .tp-zoom img {
+      transition: opacity .2s ease;
+   }
+   .tp-zoom.zooming img {
+      opacity: 0;
+   }
+   .tp-zoom .tp-zoom-lens {
+      position: absolute;
+      inset: 0;
+      background-repeat: no-repeat;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+   }
+   .tp-zoom.zooming .tp-zoom-lens {
+      opacity: 1;
+   }
+   /* Badge de descuento */
+   .tp-product-details-badge {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      z-index: 3;
+      background: #ff4545;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 4px;
+      line-height: 1.4;
+   }
+   /* Botones disabled */
+   .tp-product-details-add-to-cart-btn:disabled,
+   .tp-product-details-buy-now-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: auto;
+   }
+   /* Rating estrellas en detalle */
+   .tp-product-details-rating span {
+      color: #ffa800;
+      font-size: 14px;
+      margin-right: 2px;
+   }
+   .tp-product-details-rating-text {
+      font-size: 13px;
+      color: #767a7d;
+   }
+   .tp-product-details-rating-text:hover {
+      color: #0989ff;
+      cursor: pointer;
+   }
+   .tp-recently-viewed { padding-top: 60px; padding-bottom: 80px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+
+   <!-- breadcrumb area start -->
+   <section class="breadcrumb__area breadcrumb__style-2 include-bg pt-50 pb-20">
+      <div class="container">
+         <div class="row">
+            <div class="col-xxl-12">
+               <div class="breadcrumb__content p-relative z-index-1">
+                  <div class="breadcrumb__list has-icon">
+                     <span class="breadcrumb-icon">
+                        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M1.42393 16H15.5759C15.6884 16 15.7962 15.9584 15.8758 15.8844C15.9553 15.8104 16 15.71 16 15.6054V6.29143C16 6.22989 15.9846 6.1692 15.9549 6.11422C15.9252 6.05923 15.8821 6.01147 15.829 5.97475L8.75305 1.07803C8.67992 1.02736 8.59118 1 8.5 1C8.40882 1 8.32008 1.02736 8.24695 1.07803L1.17098 5.97587C1.11791 6.01259 1.0748 6.06035 1.04511 6.11534C1.01543 6.17033 0.999976 6.23101 1 6.29255V15.6063C1.00027 15.7108 1.04504 15.8109 1.12451 15.8847C1.20398 15.9585 1.31165 16 1.42393 16ZM10.1464 15.2107H6.85241V10.6202H10.1464V15.2107ZM1.84866 6.48977L8.4999 1.88561L15.1517 6.48977V15.2107H10.9946V10.2256C10.9946 10.1209 10.95 10.0206 10.8704 9.94654C10.7909 9.87254 10.683 9.83096 10.5705 9.83096H6.42848C6.316 9.83096 6.20812 9.87254 6.12858 9.94654C6.04904 10.0206 6.00435 10.1209 6.00435 10.2256V15.2107H1.84806L1.84866 6.48977Z" fill="#55585B" stroke="#55585B" stroke-width="0.5"/>
+                        </svg>
+                     </span>
+                     <span><a href="{% url 'store:home' %}">Inicio</a></span>
+                     {% for crumb in breadcrumb %}
+                     <span><a href="{% url 'store:category' crumb.slug %}">{{ crumb.name }}</a></span>
+                     {% endfor %}
+                     <span>{{ product.name }}</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- breadcrumb area end -->
+
+   <!-- product details area start -->
+   <section class="tp-product-details-area">
+      <div class="tp-product-details-top pb-115">
+         <div class="container">
+            <div class="row">
+               <div class="col-xl-7 col-lg-6">
+                  <div class="tp-product-details-thumb-wrapper tp-tab d-sm-flex" style="position:relative;">
+                     {% if initial_discount %}
+                     <div id="js-discount-badge" class="tp-product-details-badge">-{{ initial_discount }}%</div>
+                     {% else %}
+                     <div id="js-discount-badge" class="tp-product-details-badge" style="display:none;"></div>
+                     {% endif %}
+                     {% if all_images|length > 1 %}
+                     <nav>
+                        <div class="nav nav-tabs flex-sm-column " id="productDetailsNavThumb" role="tablist">
+                           {% for img in all_images %}
+                           <button class="nav-link{% if forloop.first %} active{% endif %}" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-{{ forloop.counter }}" aria-selected="{{ forloop.first|yesno:'true,false' }}">
+                              <img src="{{ img.url }}" alt="{{ product.name }}" loading="lazy">
+                           </button>
+                           {% endfor %}
+                        </div>
+                     </nav>
+                     {% endif %}
+                     <div class="tab-content m-img" id="productDetailsNavContent">
+                        {% for img in all_images %}
+                        <div class="tab-pane fade{% if forloop.first %} show active{% endif %}" id="nav-{{ forloop.counter }}" role="tabpanel" aria-labelledby="nav-{{ forloop.counter }}-tab" tabindex="0">
+                           <div class="tp-product-details-nav-main-thumb tp-zoom" data-zoom-img="{{ img.url }}">
+                              <img src="{{ img.url }}" alt="{{ product.name }}" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+                           </div>
+                        </div>
+                        {% empty %}
+                        <div class="tab-pane fade show active">
+                           <div class="tp-product-details-nav-main-thumb">
+                              <img src="{% static 'img/product/2/prodcut-1.jpg' %}" alt="{{ product.name }}">
+                           </div>
+                        </div>
+                        {% endfor %}
+                     </div>
+                  </div>
+               </div> <!-- col end -->
+               <div class="col-xl-5 col-lg-6">
+                  <div class="tp-product-details-wrapper">
+                     {% if product.category %}
+                     <div class="tp-product-details-category">
+                        <span><a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a></span>
+                     </div>
+                     {% endif %}
+                     <h3 class="tp-product-details-title">{{ product.name }}</h3>
+
+                     <!-- rating & reviews -->
+                     <div class="tp-product-details-rating-wrapper d-flex align-items-center mb-15">
+                        <div class="tp-product-details-rating">
+                           <span><i class="fa-solid fa-star"></i></span>
+                           <span><i class="fa-solid fa-star"></i></span>
+                           <span><i class="fa-solid fa-star"></i></span>
+                           <span><i class="fa-solid fa-star"></i></span>
+                           <span><i class="fa-solid fa-star-half-stroke"></i></span>
+                        </div>
+                        <a href="#nav-reviews" class="tp-product-details-rating-text ms-2" onclick="document.getElementById('nav-reviews-tab').click();">(4 reseñas)</a>
+                     </div>
+
+                     <!-- price -->
+                     <div id="js-price-wrapper" class="tp-product-details-price-wrapper mb-20">
+                        {% if product.display_compare_price %}
+                        <span id="js-compare-price" class="tp-product-details-price old-price">{{ product.display_compare_price|cop }}</span>
+                        {% else %}
+                        <span id="js-compare-price" class="tp-product-details-price old-price" style="display:none;"></span>
+                        {% endif %}
+                        {% if product.display_price %}
+                        <span id="js-price" class="tp-product-details-price new-price">{{ product.display_price|cop }}</span>
+                        {% else %}
+                        <span id="js-price" class="tp-product-details-price new-price"></span>
+                        {% endif %}
+                     </div>
+
+                     <!-- inventory details -->
+                     <div class="tp-product-details-inventory d-flex align-items-center mb-10">
+                        <div class="tp-product-details-stock mb-10">
+                           {% if total_stock > 0 %}
+                           <span id="js-stock-label">En stock</span>
+                           {% else %}
+                           <span id="js-stock-label">Agotado</span>
+                           {% endif %}
+                        </div>
+                        {% if product.sku %}
+                        <div class="tp-product-details-sku ms-3 mb-10">
+                           <span style="font-size:13px; color:#767a7d;">SKU: {{ product.sku }}</span>
+                        </div>
+                        {% endif %}
+                     </div>
+
+                     {% if product.short_description %}
+                     <p>{{ product.short_description|safe|truncatewords_html:40 }}</p>
+                     {% endif %}
+
+                     <!-- variations -->
+                     {% if variations %}
+                     <div class="tp-product-details-variation">
+                        {% for attr_name, values in variations.items %}
+                        <!-- single item -->
+                        <div class="tp-product-details-variation-item">
+                           <h4 class="tp-product-details-variation-title">{{ attr_name }} :</h4>
+                           <div class="tp-product-details-variation-list">
+                              {% for val in values %}
+                                 {% if val.color_hex %}
+                                 <button type="button" class="color tp-color-variation-btn" data-attr-name="{{ attr_name }}" data-attr-value="{{ val.value }}">
+                                    <span data-bg-color="{{ val.color_hex }}"></span>
+                                    <span class="tp-color-variation-tootltip">{{ val.value }}</span>
+                                 </button>
+                                 {% else %}
+                                 <button type="button" class="tp-size-variation-btn" data-attr-name="{{ attr_name }}" data-attr-value="{{ val.value }}">
+                                    <span>{{ val.value }}</span>
+                                 </button>
+                                 {% endif %}
+                              {% endfor %}
+                           </div>
+                        </div>
+                        {% endfor %}
+                     </div>
+                     {% endif %}
+
+                     <!-- actions -->
+                     <div class="tp-product-details-action-wrapper">
+                        <h3 class="tp-product-details-action-title">Cantidad</h3>
+                        <div class="tp-product-details-action-item-wrapper d-flex align-items-center">
+                           <div class="tp-product-details-quantity">
+                              <div class="tp-product-quantity mb-15 mr-15">
+                                 <span class="tp-cart-minus">
+                                    <svg width="11" height="2" viewBox="0 0 11 2" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                       <path d="M1 1H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                 </span>
+                                 <input id="js-qty-input" class="tp-cart-input" type="text" value="1" data-max-stock="{{ total_stock }}">
+                                 <span class="tp-cart-plus">
+                                    <svg width="11" height="12" viewBox="0 0 11 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                       <path d="M1 6H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                       <path d="M5.5 10.5V1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                 </span>
+                              </div>
+                           </div>
+                           <div class="tp-product-details-add-to-cart mb-15 w-100">
+                              <button id="js-add-to-cart" class="tp-product-details-add-to-cart-btn w-100"{% if total_stock == 0 %} disabled{% endif %}>Agregar al carrito</button>
+                           </div>
+                        </div>
+                        <button id="js-buy-now" class="tp-product-details-buy-now-btn w-100"{% if total_stock == 0 %} disabled{% endif %}>Comprar ahora</button>
+                     </div>
+                     <!-- beneficios -->
+                     <div class="tp-product-details-msg mb-15">
+                        <ul>
+                           <li>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px; color: #0989ff;">
+                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                              </svg>
+                              <strong>Compra segura</strong>
+                              <span style="display:block; padding-left:28px; font-weight:400; font-size:13px; color:#767a7d;">Tus datos cuidados durante toda la compra.</span>
+                           </li>
+                           <li>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px; color: #0989ff;">
+                                 <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                              </svg>
+                              <strong>Cambios y devoluciones</strong>
+                              <span style="display:block; padding-left:28px; font-weight:400; font-size:13px; color:#767a7d;">Si no te gusta, podés cambiarlo por otro o devolverlo.</span>
+                           </li>
+                           <li>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px; color: #0989ff;">
+                                 <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 3 20 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                              </svg>
+                              <strong>Envío gratis</strong>
+                              <span style="display:block; padding-left:28px; font-weight:400; font-size:13px; color:#767a7d;">Envío sin costo en todos los productos.</span>
+                           </li>
+                        </ul>
+                     </div>
+                     <div class="tp-product-details-action-sm">
+                        <button type="button" class="tp-product-details-action-sm-btn">
+                           <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path fill-rule="evenodd" clip-rule="evenodd" d="M2.33541 7.54172C3.36263 10.6766 7.42094 13.2113 8.49945 13.8387C9.58162 13.2048 13.6692 10.6421 14.6635 7.5446C15.3163 5.54239 14.7104 3.00621 12.3028 2.24514C11.1364 1.8779 9.77578 2.1014 8.83648 2.81432C8.64012 2.96237 8.36757 2.96524 8.16974 2.81863C7.17476 2.08487 5.87499 1.86999 4.69024 2.24514C2.28632 3.00549 1.68259 5.54167 2.33541 7.54172ZM8.50115 15C8.4103 15 8.32018 14.9784 8.23812 14.9346C8.00879 14.8117 2.60674 11.891 1.29011 7.87081C0.462913 5.33895 1.38316 2.15812 4.35418 1.21882C5.7492 0.776121 7.26952 0.97088 8.49895 1.73195C9.69029 0.993159 11.2729 0.789057 12.6401 1.21882C15.614 2.15956 16.5372 5.33966 15.7115 7.8701C14.4373 11.8443 8.99571 14.8088 8.76492 14.9332C8.68286 14.9777 8.592 15 8.50115 15Z" fill="currentColor"/>
+                           </svg>
+                           Lista de deseos
+                        </button>
+                        <button type="button" class="tp-product-details-action-sm-btn">
+                           <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1 3.16431H10.8622C12.0451 3.16431 12.9999 4.08839 12.9999 5.23315V7.52268" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                              <path d="M3.25177 0.985168L1 3.16433L3.25177 5.34354" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                              <path d="M12.9999 12.5983H3.13775C1.95486 12.5983 1 11.6742 1 10.5295V8.23993" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                              <path d="M10.748 14.7774L12.9998 12.5983L10.748 10.4191" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                           </svg>
+                           Comparar
+                        </button>
+                        <button type="button" class="tp-product-details-action-sm-btn">
+                           <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M8.575 12.6927C8.775 12.6927 8.94375 12.6249 9.08125 12.4895C9.21875 12.354 9.2875 12.1878 9.2875 11.9907C9.2875 11.7937 9.21875 11.6275 9.08125 11.492C8.94375 11.3565 8.775 11.2888 8.575 11.2888C8.375 11.2888 8.20625 11.3565 8.06875 11.492C7.93125 11.6275 7.8625 11.7937 7.8625 11.9907C7.8625 12.1878 7.93125 12.354 8.06875 12.4895C8.20625 12.6249 8.375 12.6927 8.575 12.6927ZM8.55625 5.0638C8.98125 5.0638 9.325 5.17771 9.5875 5.40553C9.85 5.63335 9.98125 5.92582 9.98125 6.28294C9.98125 6.52924 9.90625 6.77245 9.75625 7.01258C9.60625 7.25272 9.3625 7.5144 9.025 7.79763C8.7 8.08087 8.44063 8.3795 8.24688 8.69352C8.05313 9.00754 7.95625 9.29385 7.95625 9.55246C7.95625 9.68792 8.00938 9.79567 8.11563 9.87572C8.22188 9.95576 8.34375 9.99578 8.48125 9.99578C8.63125 9.99578 8.75625 9.94653 8.85625 9.84801C8.95625 9.74949 9.01875 9.62635 9.04375 9.47857C9.08125 9.23228 9.16562 9.0137 9.29688 8.82282C9.42813 8.63195 9.63125 8.42568 9.90625 8.20402C10.2812 7.89615 10.5531 7.58829 10.7219 7.28042C10.8906 6.97256 10.975 6.62775 10.975 6.246C10.975 5.59333 10.7594 5.06996 10.3281 4.67589C9.89688 4.28183 9.325 4.0848 8.6125 4.0848C8.1375 4.0848 7.7 4.17716 7.3 4.36187C6.9 4.54659 6.56875 4.81751 6.30625 5.17463C6.20625 5.31009 6.16563 5.44863 6.18438 5.59025C6.20313 5.73187 6.2625 5.83962 6.3625 5.91351C6.5 6.01202 6.64688 6.04281 6.80313 6.00587C6.95937 5.96892 7.0875 5.88272 7.1875 5.74726C7.35 5.5256 7.54688 5.35627 7.77813 5.23929C8.00938 5.1223 8.26875 5.0638 8.55625 5.0638ZM8.5 15.7775C7.45 15.7775 6.46875 15.5897 5.55625 15.2141C4.64375 14.8385 3.85 14.3182 3.175 13.6532C2.5 12.9882 1.96875 12.2062 1.58125 11.3073C1.19375 10.4083 1 9.43547 1 8.38873C1 7.35431 1.19375 6.38762 1.58125 5.48866C1.96875 4.58969 2.5 3.80772 3.175 3.14273C3.85 2.47775 4.64375 1.95438 5.55625 1.57263C6.46875 1.19088 7.45 1 8.5 1C9.5375 1 10.5125 1.19088 11.425 1.57263C12.3375 1.95438 13.1313 2.47775 13.8063 3.14273C14.4813 3.80772 15.0156 4.58969 15.4094 5.48866C15.8031 6.38762 16 7.35431 16 8.38873C16 9.43547 15.8031 10.4083 15.4094 11.3073C15.0156 12.2062 14.4813 12.9882 13.8063 13.6532C13.1313 14.3182 12.3375 14.8385 11.425 15.2141C10.5125 15.5897 9.5375 15.7775 8.5 15.7775ZM8.5 14.6692C10.2625 14.6692 11.7656 14.0534 13.0094 12.822C14.2531 11.5905 14.875 10.1128 14.875 8.38873C14.875 6.6647 14.2531 5.18695 13.0094 3.95549C11.7656 2.72404 10.2625 2.10831 8.5 2.10831C6.7125 2.10831 5.20312 2.72404 3.97188 3.95549C2.74063 5.18695 2.125 6.6647 2.125 8.38873C2.125 10.1128 2.74063 11.5905 3.97188 12.822C5.20312 14.0534 6.7125 14.6692 8.5 14.6692Z" fill="currentColor" stroke="currentColor" stroke-width="0.3"/>
+                           </svg>
+                           Hacer una pregunta
+                        </button>
+                     </div>
+                     {% if product.category %}
+                     <div class="tp-product-details-query">
+                        <div class="tp-product-details-query-item d-flex align-items-center">
+                           <span>Categoría:  </span>
+                           <p><a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a></p>
+                        </div>
+                     </div>
+                     {% endif %}
+                     <div class="tp-product-details-social">
+                        <span>Compartir: </span>
+                        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                     </div>
+                     <div class="tp-product-details-payment d-flex align-items-center flex-wrap justify-content-between">
+                        <p>Compra segura <br> y garantizada</p>
+                        <img src="{% static 'img/product/icons/payment-option.png' %}" alt="Métodos de pago">
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="tp-product-details-bottom pb-140">
+         <div class="container">
+            <div class="row">
+               <div class="col-xl-12">
+                  <div class="tp-product-details-tab-nav tp-tab">
+                     <nav>
+                        <div class="nav nav-tabs justify-content-center p-relative tp-product-tab" id="navPresentationTab" role="tablist">
+                          <button class="nav-link active" id="nav-description-tab" data-bs-toggle="tab" data-bs-target="#nav-description" type="button" role="tab" aria-controls="nav-description" aria-selected="true">Descripción</button>
+                          {% if product.active_variants %}
+                          <button class="nav-link" id="nav-addInfo-tab" data-bs-toggle="tab" data-bs-target="#nav-addInfo" type="button" role="tab" aria-controls="nav-addInfo" aria-selected="false">Variantes ({{ product.active_variants|length }})</button>
+                          {% endif %}
+                          <button class="nav-link" id="nav-reviews-tab" data-bs-toggle="tab" data-bs-target="#nav-reviews" type="button" role="tab" aria-controls="nav-reviews" aria-selected="false">Reseñas (4)</button>
+
+                          <span id="productTabMarker" class="tp-product-details-tab-line"></span>
+                        </div>
+                      </nav>
+                      <div class="tab-content" id="navPresentationTabContent">
+                        <div class="tab-pane fade show active" id="nav-description" role="tabpanel" aria-labelledby="nav-description-tab" tabindex="0">
+                           <div class="tp-product-details-desc-wrapper pt-80">
+                              <div class="row justify-content-center">
+                                 <div class="col-xl-10">
+                                    {% if product.description %}
+                                    <div class="tp-product-details-desc-item pb-55">
+                                       {{ product.description|safe }}
+                                    </div>
+                                    {% else %}
+                                    <p class="text-center text-muted py-4">Este producto no tiene descripción detallada.</p>
+                                    {% endif %}
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        {% if product.active_variants %}
+                        <div class="tab-pane fade" id="nav-addInfo" role="tabpanel" aria-labelledby="nav-addInfo-tab" tabindex="0">
+                           <div class="tp-product-details-additional-info">
+                              <div class="row justify-content-center">
+                                 <div class="col-xl-10">
+                                    <table>
+                                       <tbody>
+                                          {% for variant in product.active_variants %}
+                                          <tr>
+                                             <td>{{ variant.sku }}</td>
+                                             <td>{% for av in variant.attribute_values.all %}{{ av.attribute.name }}: {{ av.value }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                                             <td>{{ variant.price|cop }}</td>
+                                             <td>{% if variant.compare_price %}<del>{{ variant.compare_price|cop }}</del>{% else %}—{% endif %}</td>
+                                             <td>{{ variant.stock }} uds</td>
+                                          </tr>
+                                          {% endfor %}
+                                       </tbody>
+                                    </table>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        {% endif %}
+                        <!-- reviews tab pane -->
+                        <div class="tab-pane fade" id="nav-reviews" role="tabpanel" aria-labelledby="nav-reviews-tab" tabindex="0">
+                           <div class="tp-product-details-review-wrapper pt-60">
+                              <div class="row">
+                                 <!-- Review Summary -->
+                                 <div class="col-xl-4">
+                                    <div class="tp-product-details-review-number">
+                                       <div class="tp-product-details-review-number-summery">
+                                          <div class="tp-product-details-review-number-summery-value">4.5</div>
+                                          <div class="tp-product-details-review-number-summery-rating">
+                                             <span><i class="fa-solid fa-star"></i></span>
+                                             <span><i class="fa-solid fa-star"></i></span>
+                                             <span><i class="fa-solid fa-star"></i></span>
+                                             <span><i class="fa-solid fa-star"></i></span>
+                                             <span><i class="fa-solid fa-star-half-stroke"></i></span>
+                                          </div>
+                                          <p>4 Reseñas</p>
+                                       </div>
+                                       <div class="tp-product-details-review-rating-bar">
+                                          <div class="tp-product-details-review-rating-bar-item">
+                                             <span>5 <i class="fa-solid fa-star"></i></span>
+                                             <div class="tp-product-details-review-rating-bar-inner">
+                                                <div class="tp-product-details-review-rating-bar-inner-item" style="width: 50%;"></div>
+                                             </div>
+                                             <span>2</span>
+                                          </div>
+                                          <div class="tp-product-details-review-rating-bar-item">
+                                             <span>4 <i class="fa-solid fa-star"></i></span>
+                                             <div class="tp-product-details-review-rating-bar-inner">
+                                                <div class="tp-product-details-review-rating-bar-inner-item" style="width: 25%;"></div>
+                                             </div>
+                                             <span>1</span>
+                                          </div>
+                                          <div class="tp-product-details-review-rating-bar-item">
+                                             <span>3 <i class="fa-solid fa-star"></i></span>
+                                             <div class="tp-product-details-review-rating-bar-inner">
+                                                <div class="tp-product-details-review-rating-bar-inner-item" style="width: 25%;"></div>
+                                             </div>
+                                             <span>1</span>
+                                          </div>
+                                          <div class="tp-product-details-review-rating-bar-item">
+                                             <span>2 <i class="fa-solid fa-star"></i></span>
+                                             <div class="tp-product-details-review-rating-bar-inner">
+                                                <div class="tp-product-details-review-rating-bar-inner-item" style="width: 0%;"></div>
+                                             </div>
+                                             <span>0</span>
+                                          </div>
+                                          <div class="tp-product-details-review-rating-bar-item">
+                                             <span>1 <i class="fa-solid fa-star"></i></span>
+                                             <div class="tp-product-details-review-rating-bar-inner">
+                                                <div class="tp-product-details-review-rating-bar-inner-item" style="width: 0%;"></div>
+                                             </div>
+                                             <span>0</span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 <!-- Reviews List + Form -->
+                                 <div class="col-xl-8">
+                                    <div class="tp-product-details-review-list pr-110">
+                                       <!-- Review 1 -->
+                                       <div class="tp-product-details-review-avater d-flex align-items-start">
+                                          <div class="tp-product-details-review-avater-thumb">
+                                             <img src="{% static 'img/users/user-1.jpg' %}" alt="Camila Rodríguez" width="60" height="60">
+                                          </div>
+                                          <div class="tp-product-details-review-avater-content">
+                                             <div class="tp-product-details-review-avater-rating">
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                             </div>
+                                             <h3 class="tp-product-details-review-avater-title">Camila Rodríguez</h3>
+                                             <span class="tp-product-details-review-avater-meta">15 Feb 2026</span>
+                                             <div class="tp-product-details-review-avater-comment">
+                                                <p>Excelente calidad, el color es exactamente como en la foto. Llegó en 2 días. Muy recomendado.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <!-- Review 2 -->
+                                       <div class="tp-product-details-review-avater d-flex align-items-start">
+                                          <div class="tp-product-details-review-avater-thumb">
+                                             <img src="{% static 'img/users/user-2.jpg' %}" alt="Andrés Martínez" width="60" height="60">
+                                          </div>
+                                          <div class="tp-product-details-review-avater-content">
+                                             <div class="tp-product-details-review-avater-rating">
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                             </div>
+                                             <h3 class="tp-product-details-review-avater-title">Andrés Martínez</h3>
+                                             <span class="tp-product-details-review-avater-meta">28 Ene 2026</span>
+                                             <div class="tp-product-details-review-avater-comment">
+                                                <p>Superó mis expectativas. El material se siente premium y el empaque estaba muy bien cuidado.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <!-- Review 3 -->
+                                       <div class="tp-product-details-review-avater d-flex align-items-start">
+                                          <div class="tp-product-details-review-avater-thumb">
+                                             <img src="{% static 'img/users/user-3.jpg' %}" alt="Valentina López" width="60" height="60">
+                                          </div>
+                                          <div class="tp-product-details-review-avater-content">
+                                             <div class="tp-product-details-review-avater-rating">
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star text-muted" style="color: #d5d5d5 !important;"></i></span>
+                                             </div>
+                                             <h3 class="tp-product-details-review-avater-title">Valentina López</h3>
+                                             <span class="tp-product-details-review-avater-meta">10 Ene 2026</span>
+                                             <div class="tp-product-details-review-avater-comment">
+                                                <p>Muy buen producto. La talla es fiel. Le doy 4 estrellas porque el envío tardó un poco más de lo esperado.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <!-- Review 4 -->
+                                       <div class="tp-product-details-review-avater d-flex align-items-start">
+                                          <div class="tp-product-details-review-avater-thumb">
+                                             <img src="{% static 'img/users/user-4.jpg' %}" alt="Santiago Herrera" width="60" height="60">
+                                          </div>
+                                          <div class="tp-product-details-review-avater-content">
+                                             <div class="tp-product-details-review-avater-rating">
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star text-muted" style="color: #d5d5d5 !important;"></i></span>
+                                                <span><i class="fa-solid fa-star text-muted" style="color: #d5d5d5 !important;"></i></span>
+                                             </div>
+                                             <h3 class="tp-product-details-review-avater-title">Santiago Herrera</h3>
+                                             <span class="tp-product-details-review-avater-meta">22 Dic 2025</span>
+                                             <div class="tp-product-details-review-avater-comment">
+                                                <p>El producto está bien para el precio. Buen acabado, aunque esperaba un poco más del material.</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <!-- Review Form -->
+                                    <div class="tp-product-details-review-form">
+                                       <h3 class="tp-product-details-review-form-title">Escribe tu reseña</h3>
+                                       <p>Tu dirección de correo no será publicada. Los campos obligatorios están marcados con *</p>
+                                       <form>
+                                          <div class="tp-product-details-review-form-rating d-flex align-items-center">
+                                             <span>Tu calificación :</span>
+                                             <div class="tp-product-details-review-form-rating-icon">
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                                <span><i class="fa-solid fa-star"></i></span>
+                                             </div>
+                                          </div>
+                                          <div class="tp-product-details-review-input-wrapper">
+                                             <div class="tp-product-details-review-input-box">
+                                                <div class="tp-product-details-review-input">
+                                                   <textarea placeholder="Escribe tu reseña aquí..."></textarea>
+                                                </div>
+                                                <div class="tp-product-details-review-input-title">
+                                                   <label>Tu reseña</label>
+                                                </div>
+                                             </div>
+                                             <div class="tp-product-details-review-input-box">
+                                                <div class="tp-product-details-review-input">
+                                                   <input type="text" placeholder="Tu nombre">
+                                                </div>
+                                                <div class="tp-product-details-review-input-title">
+                                                   <label>Nombre *</label>
+                                                </div>
+                                             </div>
+                                             <div class="tp-product-details-review-input-box">
+                                                <div class="tp-product-details-review-input">
+                                                   <input type="email" placeholder="Tu correo electrónico">
+                                                </div>
+                                                <div class="tp-product-details-review-input-title">
+                                                   <label>Correo electrónico *</label>
+                                                </div>
+                                             </div>
+                                          </div>
+                                          <div class="tp-product-details-review-btn-wrapper">
+                                             <button type="button" class="tp-product-details-review-btn">Enviar</button>
+                                          </div>
+                                       </form>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                      </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- product details area end -->
+
+   <!-- recently viewed products start -->
+   <section class="tp-recently-viewed">
+      <div class="container">
+         <div class="row">
+            <div class="col-xl-12">
+               <div class="tp-section-title-wrapper mb-40">
+                  <h3 class="tp-section-title">Vistos recientemente</h3>
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-30">
+               <div class="tp-product-item-2">
+                  <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                     <a href="#">
+                        <img src="{% static 'img/product/2/prodcut-1.jpg' %}" alt="Camiseta Básica Algodón">
+                     </a>
+                     <div class="tp-product-badge">
+                        <span class="product-hot">-31%</span>
+                     </div>
+                  </div>
+                  <div class="tp-product-content-2 pt-15">
+                     <div class="tp-product-tag-2">
+                        <a href="#">Ropa</a>
+                     </div>
+                     <h3 class="tp-product-title-2">
+                        <a href="#">Camiseta Básica Algodón</a>
+                     </h3>
+                     <div class="tp-product-price-wrapper-2">
+                        <span class="tp-product-price-2 new-price">$89.000</span>
+                        <span class="tp-product-price-2 old-price">$129.000</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-30">
+               <div class="tp-product-item-2">
+                  <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                     <a href="#">
+                        <img src="{% static 'img/product/2/prodcut-2.jpg' %}" alt="Zapatillas Urban Runner">
+                     </a>
+                  </div>
+                  <div class="tp-product-content-2 pt-15">
+                     <div class="tp-product-tag-2">
+                        <a href="#">Calzado</a>
+                     </div>
+                     <h3 class="tp-product-title-2">
+                        <a href="#">Zapatillas Urban Runner</a>
+                     </h3>
+                     <div class="tp-product-price-wrapper-2">
+                        <span class="tp-product-price-2 new-price">$259.000</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-30">
+               <div class="tp-product-item-2">
+                  <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                     <a href="#">
+                        <img src="{% static 'img/product/2/prodcut-3.jpg' %}" alt="Bolso Crossbody Cuero">
+                     </a>
+                     <div class="tp-product-badge">
+                        <span class="product-hot">-21%</span>
+                     </div>
+                  </div>
+                  <div class="tp-product-content-2 pt-15">
+                     <div class="tp-product-tag-2">
+                        <a href="#">Accesorios</a>
+                     </div>
+                     <h3 class="tp-product-title-2">
+                        <a href="#">Bolso Crossbody Cuero</a>
+                     </h3>
+                     <div class="tp-product-price-wrapper-2">
+                        <span class="tp-product-price-2 new-price">$149.000</span>
+                        <span class="tp-product-price-2 old-price">$189.000</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 mb-30">
+               <div class="tp-product-item-2">
+                  <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
+                     <a href="#">
+                        <img src="{% static 'img/product/2/prodcut-4.jpg' %}" alt="Gorra Deportiva Premium">
+                     </a>
+                  </div>
+                  <div class="tp-product-content-2 pt-15">
+                     <div class="tp-product-tag-2">
+                        <a href="#">Accesorios</a>
+                     </div>
+                     <h3 class="tp-product-title-2">
+                        <a href="#">Gorra Deportiva Premium</a>
+                     </h3>
+                     <div class="tp-product-price-wrapper-2">
+                        <span class="tp-product-price-2 new-price">$59.000</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- recently viewed products end -->
+
+</main>
+
+<!-- Product data for JS -->
+<script>var PRODUCT_DATA = {{ product_json|safe }};</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+   /* ── Zoom (preservado) ── */
+   var ZOOM = 2.5;
+
+   document.querySelectorAll('.tp-zoom').forEach(function(container){
+      var img = container.querySelector('img');
+      var lens = document.createElement('div');
+      lens.className = 'tp-zoom-lens';
+      container.appendChild(lens);
+
+      function initLens(){
+         var src = container.getAttribute('data-zoom-img') || img.src;
+         lens.style.backgroundImage = 'url(' + src + ')';
+         lens.style.backgroundSize = (container.offsetWidth * ZOOM) + 'px ' + (container.offsetHeight * ZOOM) + 'px';
+      }
+
+      container.addEventListener('mouseenter', function(){
+         initLens();
+         container.classList.add('zooming');
+      });
+
+      container.addEventListener('mousemove', function(e){
+         var rect = container.getBoundingClientRect();
+         var x = ((e.clientX - rect.left) / rect.width) * 100;
+         var y = ((e.clientY - rect.top) / rect.height) * 100;
+         lens.style.backgroundPosition = x + '% ' + y + '%';
+      });
+
+      container.addEventListener('mouseleave', function(){
+         container.classList.remove('zooming');
+      });
+   });
+
+   /* ── Product detail dynamic UI ── */
+   var D = PRODUCT_DATA;
+
+   var $badge      = document.getElementById('js-discount-badge');
+   var $stockLabel = document.getElementById('js-stock-label');
+   var $price      = document.getElementById('js-price');
+   var $compare    = document.getElementById('js-compare-price');
+   var $qty        = document.getElementById('js-qty-input');
+   var $cartBtn    = document.getElementById('js-add-to-cart');
+   var $buyBtn     = document.getElementById('js-buy-now');
+
+   function formatCOP(value) {
+      if (value == null) return '';
+      var n = parseInt(value, 10);
+      if (isNaN(n)) return value;
+      var s = n.toLocaleString('es-CO');
+      // toLocaleString may use different separators; normalize to dots
+      s = n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return '$' + s;
+   }
+
+   function calcDiscount(price, comparePrice) {
+      if (!comparePrice || !price || comparePrice <= price) return 0;
+      return Math.round((1 - price / comparePrice) * 100);
+   }
+
+   function getSelectedAttributes() {
+      var selected = {};
+      var items = document.querySelectorAll('.tp-product-details-variation-item');
+      items.forEach(function(item) {
+         var activeBtn = item.querySelector('.tp-color-variation-btn.active, .tp-size-variation-btn.active');
+         if (activeBtn) {
+            var name = activeBtn.getAttribute('data-attr-name');
+            var value = activeBtn.getAttribute('data-attr-value');
+            if (name && value) {
+               selected[name] = value;
+            }
+         }
+      });
+      return selected;
+   }
+
+   function findVariant(selected) {
+      var keys = Object.keys(selected);
+      if (!keys.length) return null;
+      for (var i = 0; i < D.variants.length; i++) {
+         var v = D.variants[i];
+         var match = true;
+         for (var j = 0; j < keys.length; j++) {
+            if (v.attributes[keys[j]] !== selected[keys[j]]) {
+               match = false;
+               break;
+            }
+         }
+         // Exact match: variant must have same number of attribute keys
+         if (match && Object.keys(v.attributes).length === keys.length) {
+            return v;
+         }
+      }
+      return null;
+   }
+
+   function findMatchingVariants(selected) {
+      var keys = Object.keys(selected);
+      if (!keys.length) return D.variants;
+      var results = [];
+      for (var i = 0; i < D.variants.length; i++) {
+         var v = D.variants[i];
+         var match = true;
+         for (var j = 0; j < keys.length; j++) {
+            if (v.attributes[keys[j]] !== selected[keys[j]]) {
+               match = false;
+               break;
+            }
+         }
+         if (match) results.push(v);
+      }
+      return results;
+   }
+
+   // Count total attribute groups to know when selection is complete
+   var totalAttrGroups = document.querySelectorAll('.tp-product-details-variation-item').length;
+
+   function updateProductUI() {
+      var price, comparePrice, stock, imageUrl;
+
+      if (!D.has_variants) {
+         // Simple product
+         price = D.product_price;
+         comparePrice = D.product_compare_price;
+         stock = D.product_stock;
+         imageUrl = null;
+      } else {
+         var selected = getSelectedAttributes();
+         var selCount = Object.keys(selected).length;
+
+         if (selCount === totalAttrGroups && totalAttrGroups > 0) {
+            // Full selection — find exact variant
+            var variant = findVariant(selected);
+            if (variant) {
+               price = variant.price;
+               comparePrice = variant.compare_price;
+               stock = variant.stock;
+               imageUrl = variant.image_url;
+            } else {
+               // No exact match (shouldn't happen normally)
+               var matching = findMatchingVariants(selected);
+               price = null;
+               comparePrice = null;
+               stock = 0;
+               for (var i = 0; i < matching.length; i++) {
+                  if (price === null || matching[i].price < price) price = matching[i].price;
+                  if (matching[i].compare_price && (comparePrice === null || matching[i].compare_price < comparePrice)) {
+                     comparePrice = matching[i].compare_price;
+                  }
+                  stock += matching[i].stock;
+               }
+            }
+         } else if (selCount > 0) {
+            // Partial selection — show lowest price of matching variants
+            var matching = findMatchingVariants(selected);
+            price = null;
+            comparePrice = null;
+            stock = 0;
+            for (var i = 0; i < matching.length; i++) {
+               if (price === null || matching[i].price < price) price = matching[i].price;
+               if (matching[i].compare_price && (comparePrice === null || matching[i].compare_price < comparePrice)) {
+                  comparePrice = matching[i].compare_price;
+               }
+               stock += matching[i].stock;
+            }
+            imageUrl = null;
+         } else {
+            // No selection — use product defaults
+            price = D.product_price;
+            comparePrice = D.product_compare_price;
+            stock = D.product_stock;
+            imageUrl = null;
+         }
+      }
+
+      // Update price
+      if ($price) {
+         $price.textContent = price ? formatCOP(price) : '';
+      }
+
+      // Update compare price
+      if ($compare) {
+         if (comparePrice && price && comparePrice > price) {
+            $compare.textContent = formatCOP(comparePrice);
+            $compare.style.display = '';
+         } else {
+            $compare.textContent = '';
+            $compare.style.display = 'none';
+         }
+      }
+
+      // Update badge
+      var discount = calcDiscount(price, comparePrice);
+      if ($badge) {
+         if (discount > 0) {
+            $badge.textContent = '-' + discount + '%';
+            $badge.style.display = '';
+         } else {
+            $badge.style.display = 'none';
+         }
+      }
+
+      // Update stock label
+      if ($stockLabel) {
+         if (stock > 0) {
+            $stockLabel.textContent = 'En stock';
+            $stockLabel.closest('.tp-product-details-stock').className = 'tp-product-details-stock mb-10';
+         } else {
+            $stockLabel.textContent = 'Agotado';
+            $stockLabel.closest('.tp-product-details-stock').className = 'tp-product-details-stock mb-10';
+         }
+      }
+
+      // Update buttons
+      if ($cartBtn) $cartBtn.disabled = (stock <= 0);
+      if ($buyBtn) $buyBtn.disabled = (stock <= 0);
+
+      // Update quantity max and reset if needed
+      if ($qty) {
+         $qty.setAttribute('data-max-stock', stock);
+         var currentQty = parseInt($qty.value, 10) || 1;
+         if (stock <= 0) {
+            $qty.value = 1;
+         } else if (currentQty > stock) {
+            $qty.value = stock;
+         }
+      }
+
+      // Update main image if variant has one
+      if (imageUrl) {
+         var activePane = document.querySelector('#productDetailsNavContent .tab-pane.active .tp-zoom');
+         if (activePane) {
+            var mainImg = activePane.querySelector('img');
+            if (mainImg) {
+               mainImg.src = imageUrl;
+               activePane.setAttribute('data-zoom-img', imageUrl);
+            }
+         }
+         // Also try to activate the matching tab thumbnail
+         var thumbBtns = document.querySelectorAll('#productDetailsNavThumb button img');
+         thumbBtns.forEach(function(thumbImg) {
+            if (thumbImg.src === imageUrl) {
+               thumbImg.closest('button').click();
+            }
+         });
+      }
+   }
+
+   /* ── Variation button click handlers ── */
+   document.querySelectorAll('.tp-color-variation-btn, .tp-size-variation-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+         e.preventDefault();
+         e.stopPropagation();
+
+         // Toggle active within same group
+         var list = btn.closest('.tp-product-details-variation-list');
+         list.querySelectorAll('.tp-color-variation-btn, .tp-size-variation-btn').forEach(function(sibling) {
+            sibling.classList.remove('active');
+         });
+         btn.classList.add('active');
+
+         updateProductUI();
+      });
+   });
+
+   /* ── Quantity +/- handlers ── */
+   var minusBtn = document.querySelector('.tp-cart-minus');
+   var plusBtn = document.querySelector('.tp-cart-plus');
+
+   if (minusBtn) {
+      minusBtn.addEventListener('click', function(e) {
+         e.preventDefault();
+         e.stopPropagation();
+         if (!$qty) return;
+         var val = parseInt($qty.value, 10) || 1;
+         if (val > 1) $qty.value = val - 1;
+      });
+   }
+
+   if (plusBtn) {
+      plusBtn.addEventListener('click', function(e) {
+         e.preventDefault();
+         e.stopPropagation();
+         if (!$qty) return;
+         var val = parseInt($qty.value, 10) || 1;
+         var max = parseInt($qty.getAttribute('data-max-stock'), 10) || 999;
+         if (val < max) $qty.value = val + 1;
+      });
+   }
+
+   if ($qty) {
+      $qty.addEventListener('change', function() {
+         var val = parseInt($qty.value, 10);
+         var max = parseInt($qty.getAttribute('data-max-stock'), 10) || 999;
+         if (isNaN(val) || val < 1) $qty.value = 1;
+         else if (val > max) $qty.value = max;
+      });
+
+      $qty.addEventListener('keypress', function(e) {
+         // Only allow digits
+         if (e.key < '0' || e.key > '9') e.preventDefault();
+      });
+   }
+})();
+</script>
+{% endblock %}

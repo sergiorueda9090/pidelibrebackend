@@ -65,6 +65,22 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def display_price(self):
+        """Precio de la variante más barata, o el precio propio del producto."""
+        if hasattr(self, 'active_variants') and self.active_variants:
+            cheapest = min(self.active_variants, key=lambda v: v.price)
+            return cheapest.price
+        return self.price
+
+    @property
+    def display_compare_price(self):
+        """Precio tachado de la variante más barata, o el del producto."""
+        if hasattr(self, 'active_variants') and self.active_variants:
+            cheapest = min(self.active_variants, key=lambda v: v.price)
+            return cheapest.compare_price
+        return self.compare_price
+
 
 class ProductImage(models.Model):
     product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')

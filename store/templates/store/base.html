@@ -1,0 +1,69 @@
+{% load static %}
+<!doctype html>
+<html class="no-js" lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta http-equiv="x-ua-compatible" content="ie=edge">
+   <title>{% block title %}pidelibre{% endblock %}</title>
+   <meta name="description" content="{% block meta_description %}Tu tienda en línea{% endblock %}">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+   <!-- DNS prefetch para recursos externos (S3 imágenes) -->
+   <link rel="dns-prefetch" href="//{{ S3_DOMAIN }}">
+   <link rel="preconnect" href="//{{ S3_DOMAIN }}" crossorigin>
+
+   <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logo/favicon.png' %}">
+
+   <!-- CSS crítico (render-blocking, necesario para first paint) -->
+   <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+   <link rel="stylesheet" href="{% static 'css/font-awesome-pro.css' %}">
+   <link rel="stylesheet" href="{% static 'css/flaticon_shofy.css' %}">
+   <link rel="stylesheet" href="{% static 'css/spacing.css' %}">
+   <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+   <!-- CSS no crítico (carga diferida: descarga sin bloquear render) -->
+   <link rel="stylesheet" href="{% static 'css/animate.css' %}" media="print" onload="this.media='all'">
+   <link rel="stylesheet" href="{% static 'css/swiper-bundle.css' %}" media="print" onload="this.media='all'">
+   <link rel="stylesheet" href="{% static 'css/slick.css' %}" media="print" onload="this.media='all'">
+   <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}" media="print" onload="this.media='all'">
+   <!-- Fallback noscript -->
+   <noscript>
+      <link rel="stylesheet" href="{% static 'css/animate.css' %}">
+      <link rel="stylesheet" href="{% static 'css/swiper-bundle.css' %}">
+      <link rel="stylesheet" href="{% static 'css/slick.css' %}">
+      <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
+   </noscript>
+
+   {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+   {% include "store/partials/_preloader.html" %}
+   {% include "store/partials/_offcanvas.html" %}
+   {% include "store/partials/_header.html" %}
+
+   {% block content %}{% endblock %}
+
+   {% include "store/partials/_footer.html" %}
+
+   <!-- JS (al fondo del body para no bloquear render) -->
+   <script src="{% static 'js/vendor/jquery.js' %}"></script>
+   <script src="{% static 'js/vendor/waypoints.js' %}"></script>
+   <script src="{% static 'js/bootstrap-bundle.js' %}"></script>
+   <script src="{% static 'js/meanmenu.js' %}"></script>
+   <script src="{% static 'js/swiper-bundle.js' %}"></script>
+   <script src="{% static 'js/slick.js' %}"></script>
+   <script src="{% static 'js/range-slider.js' %}"></script>
+   <script src="{% static 'js/magnific-popup.js' %}"></script>
+   <script src="{% static 'js/nice-select.js' %}"></script>
+   <script src="{% static 'js/purecounter.js' %}"></script>
+   <script src="{% static 'js/countdown.js' %}"></script>
+   <script src="{% static 'js/wow.js' %}"></script>
+   <script src="{% static 'js/isotope-pkgd.js' %}"></script>
+   <script src="{% static 'js/imagesloaded-pkgd.js' %}"></script>
+   <script src="{% static 'js/ajax-form.js' %}"></script>
+   <script src="{% static 'js/main.js' %}"></script>
+   {% block extra_js %}{% endblock %}
+
+</body>
+</html>
