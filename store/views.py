@@ -8,6 +8,8 @@ from category.models import Category
 from product.models import Product, ProductImage, ProductVariant
 from attribute_value.models import AttributeValue
 from slider.models import Slider
+from tp_feature_area.models import TpFeatureArea
+from product.models import Product, ProductVariant
 
 
 def get_category_ids(category):
@@ -33,8 +35,32 @@ def home(request):
         is_active=True, deleted_at__isnull=True
     ).select_related('product').order_by('order')
 
+    features = TpFeatureArea.objects.filter(
+        is_active=True, deleted_at__isnull=True
+    ).order_by('order')
+
+    active_variants_qs = ProductVariant.objects.filter(
+        is_active=True, deleted_at__isnull=True
+    )
+    base_products = (
+        Product.objects
+        .filter(is_active=True, deleted_at__isnull=True)
+        .select_related('category')
+        .prefetch_related(
+            Prefetch('variants', queryset=active_variants_qs, to_attr='active_variants')
+        )
+    )
+
+    new_products      = base_products.filter(is_new=True).order_by('-created_at')[:8]
+    featured_products = base_products.filter(is_featured=True).order_by('-created_at')[:8]
+    top_sellers       = base_products.order_by('-created_at')[:8]
+
     return render(request, 'store/home.html', {
         'sliders': sliders,
+        'features': features,
+        'new_products': new_products,
+        'featured_products': featured_products,
+        'top_sellers': top_sellers,
     })
 
 

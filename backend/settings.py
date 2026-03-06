@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'gender',
     'customer',
     'slider',
+    'tp_feature_area',
 ]
 
 MIDDLEWARE = [

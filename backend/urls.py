@@ -33,4 +33,5 @@ urlpatterns = [
     path('api/gender/',             include('gender.api.urls'), name='gender_api'),
     path('api/customer/',           include('customer.api.urls'), name='customer_api'),
     path('api/slider/',             include('slider.api.urls'), name='slider_api'),
+    path('api/tp-feature-area/',    include('tp_feature_area.api.urls'), name='tp_feature_area_api'),
 ]
