@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from category.models import Category
+from brand.models    import Brand
+from gender.models   import Gender
 from product.models  import Product, ProductImage, ProductVariant
 from attribute_value.models import AttributeValue
 
@@ -33,6 +35,8 @@ def _clean_html(value):
 class ProductSerializer(serializers.ModelSerializer):
     """Usado en creación."""
     category          = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False, allow_null=True)
+    brand             = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all(), required=False, allow_null=True)
+    gender            = serializers.PrimaryKeyRelatedField(queryset=Gender.objects.all(), required=False, allow_null=True)
     image             = serializers.ImageField(required=False, allow_null=True)
     description       = serializers.CharField(required=False, allow_blank=True, default='')
     short_description = serializers.CharField(required=False, allow_blank=True, default='')
@@ -45,7 +49,8 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Product
         fields = [
-            'category', 'name', 'slug', 'description', 'short_description',
+            'category', 'brand', 'gender',
+            'name', 'slug', 'description', 'short_description',
             'image', 'price', 'compare_price', 'cost_price',
             'sku', 'stock', 'is_active', 'is_featured', 'is_new',
             'meta_title', 'meta_description',
@@ -82,12 +87,15 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     """Usado en el listado paginado."""
     category = serializers.SerializerMethodField()
+    brand    = serializers.SerializerMethodField()
+    gender   = serializers.SerializerMethodField()
     image    = serializers.SerializerMethodField()
 
     class Meta:
         model  = Product
         fields = [
-            'id', 'category', 'name', 'slug', 'short_description',
+            'id', 'category', 'brand', 'gender',
+            'name', 'slug', 'short_description',
             'image', 'price', 'compare_price', 'sku', 'stock',
             'is_active', 'is_featured', 'is_new',
             'created_at', 'deleted_at',
@@ -96,6 +104,16 @@ class ProductListSerializer(serializers.ModelSerializer):
     def get_category(self, obj):
         if obj.category:
             return {'id': obj.category.id, 'name': obj.category.name}
+        return None
+
+    def get_brand(self, obj):
+        if obj.brand:
+            return {'id': obj.brand.id, 'name': obj.brand.name}
+        return None
+
+    def get_gender(self, obj):
+        if obj.gender:
+            return {'id': obj.gender.id, 'name': obj.gender.name}
         return None
 
     def get_image(self, obj):
@@ -109,6 +127,8 @@ class ProductListSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(serializers.ModelSerializer):
     """Usado en create/get-by-id para devolver el registro completo."""
     category   = serializers.SerializerMethodField()
+    brand      = serializers.SerializerMethodField()
+    gender     = serializers.SerializerMethodField()
     user       = serializers.SerializerMethodField()
     updated_by = serializers.SerializerMethodField()
     deleted_by = serializers.SerializerMethodField()
@@ -119,7 +139,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Product
         fields = [
-            'id', 'user', 'updated_by', 'deleted_by', 'category',
+            'id', 'user', 'updated_by', 'deleted_by',
+            'category', 'brand', 'gender',
             'name', 'slug', 'description', 'short_description',
             'image', 'images', 'variants',
             'price', 'compare_price', 'cost_price',
@@ -131,6 +152,16 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     def get_category(self, obj):
         if obj.category:
             return {'id': obj.category.id, 'name': obj.category.name}
+        return None
+
+    def get_brand(self, obj):
+        if obj.brand:
+            return {'id': obj.brand.id, 'name': obj.brand.name}
+        return None
+
+    def get_gender(self, obj):
+        if obj.gender:
+            return {'id': obj.gender.id, 'name': obj.gender.name}
         return None
 
     def get_user(self, obj):
@@ -166,6 +197,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 class ProductUpdateSerializer(serializers.ModelSerializer):
     """Usado en actualización parcial."""
     category          = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False, allow_null=True)
+    brand             = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all(), required=False, allow_null=True)
+    gender            = serializers.PrimaryKeyRelatedField(queryset=Gender.objects.all(), required=False, allow_null=True)
     image             = serializers.ImageField(required=False, allow_null=True)
     description       = serializers.CharField(required=False, allow_blank=True)
     short_description = serializers.CharField(required=False, allow_blank=True)
@@ -178,7 +211,8 @@ class ProductUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Product
         fields = [
-            'category', 'name', 'slug', 'description', 'short_description',
+            'category', 'brand', 'gender',
+            'name', 'slug', 'description', 'short_description',
             'image', 'price', 'compare_price', 'cost_price',
             'sku', 'stock', 'is_active', 'is_featured', 'is_new',
             'meta_title', 'meta_description',

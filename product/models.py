@@ -3,6 +3,8 @@ import os
 from django.db import models
 from user.models import User
 from category.models import Category
+from brand.models import Brand
+from gender.models import Gender
 
 
 def product_image_path(instance, filename):
@@ -34,6 +36,16 @@ class Product(models.Model):
                    )
     category     = models.ForeignKey(
                      Category, null=True, blank=True,
+                     on_delete=models.SET_NULL,
+                     related_name='products'
+                   )
+    brand        = models.ForeignKey(
+                     Brand, null=True, blank=True,
+                     on_delete=models.SET_NULL,
+                     related_name='products'
+                   )
+    gender       = models.ForeignKey(
+                     Gender, null=True, blank=True,
                      on_delete=models.SET_NULL,
                      related_name='products'
                    )

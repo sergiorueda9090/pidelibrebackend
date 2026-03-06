@@ -29,4 +29,7 @@ urlpatterns = [
     path('api/attribute/',          include('attribute.api.urls'), name='attribute_api'),
     path('api/attribute-value/',    include('attribute_value.api.urls'), name='attribute_value_api'),
     path('api/product/',            include('product.api.urls'), name='product_api'),
+    path('api/brand/',              include('brand.api.urls'), name='brand_api'),
+    path('api/gender/',             include('gender.api.urls'), name='gender_api'),
+    path('api/customer/',           include('customer.api.urls'), name='customer_api'),
 ]

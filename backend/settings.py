@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'attribute_value',
     'product',
     'store',
+    'brand',
+    'gender',
+    'customer',
 ]
 
 MIDDLEWARE = [
