@@ -7,6 +7,7 @@ from django.db.models import Prefetch, Min, Case, When, F, Q, DecimalField
 from category.models import Category
 from product.models import Product, ProductImage, ProductVariant
 from attribute_value.models import AttributeValue
+from slider.models import Slider
 
 
 def get_category_ids(category):
@@ -28,8 +29,13 @@ def get_breadcrumb(category):
 
 
 def home(request):
-    # categories se inyecta automáticamente por el context processor
-    return render(request, 'store/home.html')
+    sliders = Slider.objects.filter(
+        is_active=True, deleted_at__isnull=True
+    ).select_related('product').order_by('order')
+
+    return render(request, 'store/home.html', {
+        'sliders': sliders,
+    })
 
 
 def category_view(request, slug):

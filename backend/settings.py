@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'brand',
     'gender',
     'customer',
+    'slider',
 ]
 
 MIDDLEWARE = [
