@@ -10,15 +10,27 @@
                      <div class="tp-footer-widget-content">
                         <div class="tp-footer-logo">
                            <a href="{% url 'store:home' %}">
-                              <img src="{% static 'img/logo/logo.svg' %}" alt="logo">
+                              {% if footer and footer.logo %}
+                                 <img src="{{ footer.logo.url }}" alt="logo">
+                              {% else %}
+                                 <img src="{% static 'img/logo/logo.svg' %}" alt="logo">
+                              {% endif %}
                            </a>
                         </div>
-                        <p class="tp-footer-desc">Tu tienda en línea de confianza. Encuentra todo lo que necesitas.</p>
+                        <p class="tp-footer-desc">{% if footer %}{{ footer.description }}{% else %}Tu tienda en línea de confianza. Encuentra todo lo que necesitas.{% endif %}</p>
                         <div class="tp-footer-social">
-                           <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                           <a href="#"><i class="fa-brands fa-twitter"></i></a>
-                           <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                           <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                           {% if footer and footer.facebook_url %}
+                              <a href="{{ footer.facebook_url }}" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
+                           {% endif %}
+                           {% if footer and footer.twitter_url %}
+                              <a href="{{ footer.twitter_url }}" target="_blank"><i class="fa-brands fa-twitter"></i></a>
+                           {% endif %}
+                           {% if footer and footer.linkedin_url %}
+                              <a href="{{ footer.linkedin_url }}" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+                           {% endif %}
+                           {% if footer and footer.instagram_url %}
+                              <a href="{{ footer.instagram_url }}" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                           {% endif %}
                         </div>
                      </div>
                   </div>
@@ -57,8 +69,8 @@
                      <h4 class="tp-footer-widget-title">Contáctanos</h4>
                      <div class="tp-footer-widget-content">
                         <div class="tp-footer-talk mb-20">
-                           <span>¿Tienes preguntas? Llámanos</span>
-                           <h4><a href="tel:+1234567890">+123 456 7890</a></h4>
+                           <span>{% if footer and footer.phone_label %}{{ footer.phone_label }}{% else %}¿Tienes preguntas? Llámanos{% endif %}</span>
+                           <h4><a href="tel:{% if footer and footer.phone %}{{ footer.phone }}{% else %}+1234567890{% endif %}">{% if footer and footer.phone %}{{ footer.phone }}{% else %}+123 456 7890{% endif %}</a></h4>
                         </div>
                         <div class="tp-footer-contact">
                            <div class="tp-footer-contact-item d-flex align-items-start">
@@ -73,7 +85,7 @@
                                  </span>
                               </div>
                               <div class="tp-footer-contact-content">
-                                 <p><a href="mailto:info@pidelibre.com">info@pidelibre.com</a></p>
+                                 <p><a href="mailto:{% if footer and footer.email %}{{ footer.email }}{% else %}info@pidelibre.com{% endif %}">{% if footer and footer.email %}{{ footer.email }}{% else %}info@pidelibre.com{% endif %}</a></p>
                               </div>
                            </div>
                         </div>
@@ -89,13 +101,17 @@
                <div class="row align-items-center">
                   <div class="col-md-6">
                      <div class="tp-footer-copyright">
-                        <p>© {% now "Y" %} pidelibre.com — Todos los derechos reservados.</p>
+                        <p>© {% now "Y" %} {% if footer and footer.copyright_text %}{{ footer.copyright_text }}{% else %}pidelibre.com — Todos los derechos reservados.{% endif %}</p>
                      </div>
                   </div>
                   <div class="col-md-6">
                      <div class="tp-footer-payment text-md-end">
                         <p>
-                           <img src="{% static 'img/footer/footer-pay.png' %}" alt="métodos de pago" loading="lazy">
+                           {% if footer and footer.payment_image %}
+                              <img src="{{ footer.payment_image.url }}" alt="métodos de pago" loading="lazy">
+                           {% else %}
+                              <img src="{% static 'img/footer/footer-pay.png' %}" alt="métodos de pago" loading="lazy">
+                           {% endif %}
                         </p>
                      </div>
                   </div>

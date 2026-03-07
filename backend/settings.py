@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'customer',
     'slider',
     'tp_feature_area',
+    'footer',
 ]
 
 MIDDLEWARE = [
