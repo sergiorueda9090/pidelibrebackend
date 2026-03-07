@@ -1,15 +1,23 @@
 import json
 from collections import OrderedDict
 from decimal import Decimal
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Min, Case, When, F, Q, DecimalField
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from category.models import Category
 from product.models import Product, ProductImage, ProductVariant
 from attribute_value.models import AttributeValue
 from slider.models import Slider
 from tp_feature_area.models import TpFeatureArea
-from product.models import Product, ProductVariant
+from customer.models import Customer, CustomerAddress
+from user.models import User
+
+
+def custom_404(request, exception):
+    return render(request, 'store/404.html', status=404)
 
 
 def get_category_ids(category):
@@ -219,4 +227,148 @@ def product_detail_view(request, slug):
         'breadcrumb':        breadcrumb,
         'product_json':      json.dumps(product_json),
         'initial_discount':  initial_discount,
+    })
+
+
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('store:profile')
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        email      = request.POST.get('email', '').strip()
+        password   = request.POST.get('password', '')
+        password2  = request.POST.get('password2', '')
+
+        if not all([first_name, last_name, email, password]):
+            messages.error(request, 'Todos los campos son obligatorios.')
+            return render(request, 'store/register.html')
+
+        if password != password2:
+            messages.error(request, 'Las contraseñas no coinciden.')
+            return render(request, 'store/register.html')
+
+        if len(password) < 6:
+            messages.error(request, 'La contraseña debe tener al menos 6 caracteres.')
+            return render(request, 'store/register.html')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Ya existe una cuenta con este correo electrónico.')
+            return render(request, 'store/register.html')
+
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        Customer.objects.create(
+            user=user,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+        )
+
+        login(request, user)
+        messages.success(request, 'Cuenta creada exitosamente.')
+        return redirect('store:profile')
+
+    return render(request, 'store/register.html')
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('store:profile')
+
+    if request.method == 'POST':
+        email    = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get('next', 'store:home')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Correo electrónico o contraseña incorrectos.')
+
+    return render(request, 'store/login.html')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('store:home')
+
+
+@login_required(login_url='/cuenta/ingresar/')
+def profile_view(request):
+    customer, _ = Customer.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+        }
+    )
+    address = customer.addresses.first()
+
+    active_tab = request.POST.get('tab', request.GET.get('tab', 'profile'))
+
+    if request.method == 'POST':
+        tab = request.POST.get('tab', 'info')
+
+        if tab == 'info':
+            customer.first_name      = request.POST.get('first_name', customer.first_name).strip()
+            customer.last_name       = request.POST.get('last_name', customer.last_name).strip()
+            customer.phone           = request.POST.get('phone', '').strip() or None
+            customer.document_number = request.POST.get('document_number', '').strip() or None
+            customer.save()
+            request.user.first_name = customer.first_name
+            request.user.last_name  = customer.last_name
+            request.user.save()
+            messages.success(request, 'Información actualizada correctamente.')
+
+        elif tab == 'address':
+            addr_data = {
+                'address':     request.POST.get('address', '').strip(),
+                'city':        request.POST.get('city', '').strip(),
+                'state':       request.POST.get('state', '').strip(),
+                'country':     request.POST.get('country', 'Colombia').strip(),
+                'postal_code': request.POST.get('postal_code', '').strip(),
+            }
+            if address:
+                for key, val in addr_data.items():
+                    setattr(address, key, val)
+                address.save()
+            else:
+                address = CustomerAddress.objects.create(customer=customer, **addr_data)
+            messages.success(request, 'Dirección actualizada correctamente.')
+
+        elif tab == 'password':
+            current  = request.POST.get('current_password', '')
+            new_pass = request.POST.get('new_password', '')
+            new_pass2 = request.POST.get('new_password2', '')
+
+            if not request.user.check_password(current):
+                messages.error(request, 'La contraseña actual es incorrecta.')
+            elif new_pass != new_pass2:
+                messages.error(request, 'Las nuevas contraseñas no coinciden.')
+            elif len(new_pass) < 6:
+                messages.error(request, 'La nueva contraseña debe tener al menos 6 caracteres.')
+            else:
+                request.user.set_password(new_pass)
+                request.user.save()
+                login(request, request.user)
+                messages.success(request, 'Contraseña actualizada correctamente.')
+
+        return redirect(f'/cuenta/perfil/?tab={tab}')
+
+    return render(request, 'store/profile.html', {
+        'customer': customer,
+        'address': address,
+        'active_tab': active_tab,
+        'orders': [],
     })

@@ -1,0 +1,126 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Iniciar Sesión — pidelibre{% endblock %}
+{% block meta_description %}Ingresa a tu cuenta en pidelibre.{% endblock %}
+
+{% block content %}
+<main>
+
+   <!-- breadcrumb area start -->
+   <section class="breadcrumb__area include-bg pt-100 pb-50">
+      <div class="container">
+         <div class="row">
+            <div class="col-xxl-12">
+               <div class="breadcrumb__content p-relative z-index-1">
+                  <h3 class="breadcrumb__title">Iniciar Sesión</h3>
+                  <div class="breadcrumb__list">
+                     <span><a href="{% url 'store:home' %}">Inicio</a></span>
+                     <span>Iniciar Sesión</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- breadcrumb area end -->
+
+   <!-- login area start -->
+   <section class="tp-login-area pb-140 p-relative z-index-1 fix">
+      <div class="container">
+         <div class="row justify-content-center">
+            <div class="col-xl-6 col-lg-8">
+               <div class="tp-login-wrapper">
+                  <div class="tp-login-top text-center mb-30">
+                     <h3 class="tp-login-title">Iniciar Sesión</h3>
+                     <p>Ingresa tus datos para acceder a tu cuenta</p>
+                  </div>
+
+                  {% if messages %}
+                  <div class="mb-20">
+                     {% for message in messages %}
+                     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                     </div>
+                     {% endfor %}
+                  </div>
+                  {% endif %}
+
+                  <form action="{% url 'store:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" method="post">
+                     {% csrf_token %}
+                     <div class="tp-login-input-wrapper">
+                        <div class="tp-login-input-box">
+                           <div class="tp-login-input">
+                              <input id="email" name="email" type="email" placeholder="correo@ejemplo.com" required>
+                           </div>
+                           <div class="tp-login-input-title">
+                              <label for="email">Correo electrónico</label>
+                           </div>
+                        </div>
+                        <div class="tp-login-input-box">
+                           <div class="tp-login-input p-relative">
+                              <input id="password" name="password" type="password" placeholder="Min. 6 caracteres" required>
+                              <div class="tp-login-input-eye" id="password-show-toggle">
+                                 <span id="open-eye" class="open-eye">
+                                    <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                       <path d="M1.73242 7.00004C1.73242 7.00004 4.54969 1.18188 10.0042 1.18188C15.4588 1.18188 18.276 7.00004 18.276 7.00004C18.276 7.00004 15.4588 12.8182 10.0042 12.8182C4.54969 12.8182 1.73242 7.00004 1.73242 7.00004Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                       <path d="M10.0042 9.18185C11.2088 9.18185 12.186 8.20458 12.186 7.00003C12.186 5.79548 11.2088 4.81821 10.0042 4.81821C8.79968 4.81821 7.82242 5.79548 7.82242 7.00003C7.82242 8.20458 8.79968 9.18185 10.0042 9.18185Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                 </span>
+                                 <span id="close-eye" class="close-eye" style="display:none;">
+                                    <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                       <path d="M9.34739 3.18277C9.88517 3.05832 10.4363 2.99611 10.9893 2.99723C16.4439 2.99723 19.2611 8.81539 19.2611 8.81539C18.7559 9.79789 18.1352 10.7178 17.4118 11.555M12.8584 10.6845C12.6144 10.9445 12.3211 11.1534 11.9959 11.299C11.6708 11.4446 11.3203 11.524 10.9655 11.5326C10.6107 11.5412 10.2569 11.4788 9.92528 11.3492C9.59372 11.2196 9.29108 11.0254 9.03532 10.778C8.77955 10.5305 8.57576 10.2348 8.43614 9.90819C8.29653 9.58158 8.22376 9.23069 8.22184 8.87585C8.21993 8.521 8.28891 8.16937 8.42496 7.84131C8.56101 7.51325 8.76154 7.21543 9.01458 6.96531" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                       <path d="M2.71484 0.90918L19.2612 17.4555" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                       <path d="M8.12921 6.32371C6.80078 7.29456 5.69615 8.53955 4.89747 9.97282C5.40263 10.9553 6.0234 11.8753 6.74673 12.7128C8.11569 14.2484 9.9764 15.2892 11.0086 14.6337C12.0408 13.9782 12.8776 13.4537 13.8481 12.04" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                 </span>
+                              </div>
+                           </div>
+                           <div class="tp-login-input-title">
+                              <label for="password">Contraseña</label>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="tp-login-bottom">
+                        <button type="submit" class="tp-login-btn w-100">Iniciar Sesión</button>
+                     </div>
+                  </form>
+
+                  <div class="tp-login-suggetions d-sm-flex align-items-center justify-content-center mt-20">
+                     <div class="tp-login-forgot">
+                        <span>¿No tienes cuenta? <a href="{% url 'store:register' %}">Regístrate</a></span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- login area end -->
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+   // Toggle password visibility
+   var toggle = document.getElementById('password-show-toggle');
+   if (toggle) {
+      toggle.addEventListener('click', function() {
+         var input = document.getElementById('password');
+         var openEye = document.getElementById('open-eye');
+         var closeEye = document.getElementById('close-eye');
+         if (input.type === 'password') {
+            input.type = 'text';
+            openEye.style.display = 'none';
+            closeEye.style.display = 'inline';
+         } else {
+            input.type = 'password';
+            openEye.style.display = 'inline';
+            closeEye.style.display = 'none';
+         }
+      });
+   }
+</script>
+{% endblock %}

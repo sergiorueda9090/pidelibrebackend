@@ -1,0 +1,52 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Página no encontrada — pidelibre{% endblock %}
+{% block meta_description %}La página que buscas no existe o fue movida.{% endblock %}
+
+{% block content %}
+<main>
+
+   <!-- breadcrumb area start -->
+   <section class="breadcrumb__area include-bg pt-100 pb-50">
+      <div class="container">
+         <div class="row">
+            <div class="col-xxl-12">
+               <div class="breadcrumb__content p-relative z-index-1">
+                  <h3 class="breadcrumb__title">Página no encontrada</h3>
+                  <div class="breadcrumb__list">
+                     <span><a href="{% url 'store:home' %}">Inicio</a></span>
+                     <span>404</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- breadcrumb area end -->
+
+   <!-- error area start -->
+   <section class="pt-50 pb-120">
+      <div class="container">
+         <div class="row justify-content-center">
+            <div class="col-xl-6 col-lg-8 col-md-10">
+               <div class="text-center">
+                  <h2 class="tp-section-title mb-15" style="font-size: 140px; font-weight: 800; line-height: 1;">404</h2>
+                  <h3 class="tp-section-title mb-20" style="font-size: 26px;">¡Oops! Página no encontrada</h3>
+                  <p class="mb-40" style="color: #767a82;">Lo sentimos, la página que estás buscando no existe, fue eliminada o cambió de dirección.</p>
+                  <a href="{% url 'store:home' %}" class="tp-btn tp-btn-border">
+                     Volver al inicio
+                     <svg width="17" height="14" viewBox="0 0 17 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 6.99976L1 6.99976" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9.9502 0.975414L16.0002 6.99941L9.9502 13.0244" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                     </svg>
+                  </a>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- error area end -->
+
+</main>
+{% endblock %}

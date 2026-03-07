@@ -1,0 +1,428 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Mi Perfil — pidelibre{% endblock %}
+{% block meta_description %}Gestiona tu perfil, dirección y contraseña.{% endblock %}
+
+{% block content %}
+<main>
+
+   <!-- profile area start -->
+   <section class="profile__area pt-120 pb-120">
+      <div class="container">
+         <div class="profile__inner p-relative">
+            <div class="profile__shape">
+               <img class="profile__shape-1" src="{% static 'img/login/laptop.png' %}" alt="">
+               <img class="profile__shape-2" src="{% static 'img/login/man.png' %}" alt="">
+               <img class="profile__shape-3" src="{% static 'img/login/shape-1.png' %}" alt="">
+               <img class="profile__shape-4" src="{% static 'img/login/shape-2.png' %}" alt="">
+               <img class="profile__shape-5" src="{% static 'img/login/shape-3.png' %}" alt="">
+               <img class="profile__shape-6" src="{% static 'img/login/shape-4.png' %}" alt="">
+            </div>
+            <div class="row">
+               <div class="col-xxl-4 col-lg-4">
+                  <div class="profile__tab mr-40">
+                     <nav>
+                        <div class="nav nav-tabs tp-tab-menu flex-column" id="profile-tab" role="tablist">
+                           <button class="nav-link {% if active_tab == 'profile' %}active{% endif %}" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile">
+                              <span><i class="fa-regular fa-user-pen"></i></span>
+                              Perfil
+                           </button>
+                           <button class="nav-link {% if active_tab == 'info' %}active{% endif %}" id="nav-information-tab" data-bs-toggle="tab" data-bs-target="#nav-information" type="button" role="tab" aria-controls="nav-information">
+                              <span><i class="fa-regular fa-circle-info"></i></span>
+                              Información
+                           </button>
+                           <button class="nav-link {% if active_tab == 'address' %}active{% endif %}" id="nav-address-tab" data-bs-toggle="tab" data-bs-target="#nav-address" type="button" role="tab" aria-controls="nav-address">
+                              <span><i class="fa-light fa-location-dot"></i></span>
+                              Dirección
+                           </button>
+                           <button class="nav-link {% if active_tab == 'orders' %}active{% endif %}" id="nav-order-tab" data-bs-toggle="tab" data-bs-target="#nav-order" type="button" role="tab" aria-controls="nav-order">
+                              <span><i class="fa-light fa-clipboard-list-check"></i></span>
+                              Mis Pedidos
+                           </button>
+                           <button class="nav-link {% if active_tab == 'password' %}active{% endif %}" id="nav-password-tab" data-bs-toggle="tab" data-bs-target="#nav-password" type="button" role="tab" aria-controls="nav-password">
+                              <span><i class="fa-regular fa-lock"></i></span>
+                              Cambiar Contraseña
+                           </button>
+                           <span id="marker-vertical" class="tp-tab-line d-none d-sm-inline-block"></span>
+                        </div>
+                     </nav>
+                  </div>
+               </div>
+               <div class="col-xxl-8 col-lg-8">
+
+                  {% if messages %}
+                  <div class="mb-25">
+                     {% for message in messages %}
+                     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                     </div>
+                     {% endfor %}
+                  </div>
+                  {% endif %}
+
+                  <div class="profile__tab-content">
+                     <div class="tab-content" id="profile-tabContent">
+
+                        <!-- tab: profile -->
+                        <div class="tab-pane fade {% if active_tab == 'profile' %}show active{% endif %}" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                           <div class="profile__main">
+                              <div class="profile__main-top pb-80">
+                                 <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                       <div class="profile__main-inner d-flex flex-wrap align-items-center">
+                                          <div class="profile__main-thumb">
+                                             <img src="{% static 'img/users/user-10.jpg' %}" alt="">
+                                          </div>
+                                          <div class="profile__main-content">
+                                             <h4 class="profile__main-title">Bienvenido {{ customer.first_name }}!</h4>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                       <div class="profile__main-logout text-sm-end">
+                                          <a href="{% url 'store:logout' %}" class="tp-logout-btn">Cerrar Sesión</a>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="profile__main-info">
+                                 <div class="row gx-3">
+                                    <div class="col-md-4 col-sm-6">
+                                       <div class="profile__main-info-item">
+                                          <div class="profile__main-info-icon">
+                                             <span>
+                                                <span class="profile-icon-count profile-order">0</span>
+                                                <svg viewBox="0 0 512 512"><path d="M472.916,224H448.007a24.534,24.534,0,0,0-23.417-18H398V140.976a6.86,6.86,0,0,0-3.346-6.062L207.077,26.572a6.927,6.927,0,0,0-6.962,0L12.48,134.914A6.981,6.981,0,0,0,9,140.976V357.661a7,7,0,0,0,3.5,6.062L200.154,472.065a7,7,0,0,0,3.5.938,7.361,7.361,0,0,0,3.6-.938L306,415.108v41.174A29.642,29.642,0,0,0,335.891,486H472.916A29.807,29.807,0,0,0,503,456.282v-202.1A30.2,30.2,0,0,0,472.916,224Z"/></svg>
+                                             </span>
+                                          </div>
+                                          <h4 class="profile__main-info-title">Pedidos</h4>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                       <div class="profile__main-info-item">
+                                          <div class="profile__main-info-icon">
+                                             <span>
+                                                <span class="profile-icon-count profile-wishlist">0</span>
+                                                <svg viewBox="0 -20 480 480" xmlns="http://www.w3.org/2000/svg"><path d="m348 0c-43 .0664062-83.28125 21.039062-108 56.222656-24.71875-35.183594-65-56.1562498-108-56.222656-70.320312 0-132 65.425781-132 140 0 72.679688 41.039062 147.535156 118.6875 216.480469 35.976562 31.882812 75.441406 59.597656 117.640625 82.625 2.304687 1.1875 5.039063 1.1875 7.34375 0 42.183594-23.027344 81.636719-50.746094 117.601563-82.625 77.6875-68.945313 118.726562-143.800781 118.726562-216.480469 0-74.574219-61.679688-140-132-140z"/></svg>
+                                             </span>
+                                          </div>
+                                          <h4 class="profile__main-info-title">Favoritos</h4>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                       <div class="profile__main-info-item">
+                                          <div class="profile__main-info-icon">
+                                             <span>
+                                                <span class="profile-icon-count profile-wishlist">0</span>
+                                                <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                   <path fill-rule="evenodd" clip-rule="evenodd" d="M6.48626 20.5H14.8341C17.9004 20.5 20.2528 19.3924 19.5847 14.9348L18.8066 8.89359C18.3947 6.66934 16.976 5.81808 15.7311 5.81808H5.55262C4.28946 5.81808 2.95308 6.73341 2.4771 8.89359L1.69907 14.9348C1.13157 18.889 3.4199 20.5 6.48626 20.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                   <path d="M6.34902 5.5984C6.34902 3.21232 8.28331 1.27803 10.6694 1.27803V1.27803C11.8184 1.27316 12.922 1.72619 13.7362 2.53695C14.5504 3.3477 15.0081 4.44939 15.0081 5.5984V5.5984" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                             </span>
+                                          </div>
+                                          <h4 class="profile__main-info-title">Carrito</h4>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <!-- tab: information -->
+                        <div class="tab-pane fade {% if active_tab == 'info' %}show active{% endif %}" id="nav-information" role="tabpanel" aria-labelledby="nav-information-tab">
+                           <div class="profile__info">
+                              <h3 class="profile__info-title">Datos Personales</h3>
+                              <div class="profile__info-content">
+                                 <form action="{% url 'store:profile' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tab" value="info">
+                                    <div class="row">
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="first_name" placeholder="Ingresa tu nombre" value="{{ customer.first_name }}" required>
+                                                <span>
+                                                   <svg width="17" height="19" viewBox="0 0 17 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M9 9C11.2091 9 13 7.20914 13 5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5C5 7.20914 6.79086 9 9 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                      <path d="M15.5 17.6C15.5 14.504 12.3626 12 8.5 12C4.63737 12 1.5 14.504 1.5 17.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="last_name" placeholder="Ingresa tu apellido" value="{{ customer.last_name }}" required>
+                                                <span>
+                                                   <svg width="17" height="19" viewBox="0 0 17 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M9 9C11.2091 9 13 7.20914 13 5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5C5 7.20914 6.79086 9 9 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                      <path d="M15.5 17.6C15.5 14.504 12.3626 12 8.5 12C4.63737 12 1.5 14.504 1.5 17.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="email" placeholder="Correo electrónico" value="{{ customer.email }}" disabled>
+                                                <span>
+                                                   <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M13 14.6H5C2.6 14.6 1 13.4 1 10.6V5C1 2.2 2.6 1 5 1H13C15.4 1 17 2.2 17 5V10.6C17 13.4 15.4 14.6 13 14.6Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                                      <path d="M13 5.3999L10.496 7.3999C9.672 8.0559 8.32 8.0559 7.496 7.3999L5 5.3999" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="tel" name="phone" placeholder="Ingresa tu teléfono" value="{{ customer.phone|default:'' }}">
+                                                <span>
+                                                   <svg width="15" height="18" viewBox="0 0 15 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M13.9148 5V13C13.9148 16.2 13.1076 17 9.87892 17H5.03587C1.80717 17 1 16.2 1 13V5C1 1.8 1.80717 1 5.03587 1H9.87892C13.1076 1 13.9148 1.8 13.9148 5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                      <path opacity="0.4" d="M9.08026 3.80054H5.85156" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                      <path opacity="0.4" d="M7.45425 14.6795C8.14522 14.6795 8.70537 14.1243 8.70537 13.4395C8.70537 12.7546 8.14522 12.1995 7.45425 12.1995C6.76327 12.1995 6.20312 12.7546 6.20312 13.4395C6.20312 14.1243 6.76327 14.6795 7.45425 14.6795Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="document_number" placeholder="Cédula / NIT" value="{{ customer.document_number|default:'' }}">
+                                                <span>
+                                                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M7.99377 10.1461C9.39262 10.1461 10.5266 9.0283 10.5266 7.64946C10.5266 6.27061 9.39262 5.15283 7.99377 5.15283C6.59493 5.15283 5.46094 6.27061 5.46094 7.64946C5.46094 9.0283 6.59493 10.1461 7.99377 10.1461Z" stroke="currentColor" stroke-width="1.5"/>
+                                                      <path d="M1.19707 6.1933C2.79633 -0.736432 13.2118 -0.72843 14.803 6.2013C15.7365 10.2663 13.1712 13.7072 10.9225 15.8357C9.29079 17.3881 6.70924 17.3881 5.06939 15.8357C2.8288 13.7072 0.263493 10.2583 1.19707 6.1933Z" stroke="currentColor" stroke-width="1.5"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-12">
+                                          <div class="profile__btn">
+                                             <button type="submit" class="tp-btn">Guardar Cambios</button>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </form>
+                              </div>
+                           </div>
+                        </div>
+
+                        <!-- tab: address -->
+                        <div class="tab-pane fade {% if active_tab == 'address' %}show active{% endif %}" id="nav-address" role="tabpanel" aria-labelledby="nav-address-tab">
+                           <div class="profile__info">
+                              <h3 class="profile__info-title">Dirección de Envío</h3>
+                              <div class="profile__info-content">
+                                 {% if address %}
+                                 <div class="profile__address mb-40">
+                                    <div class="row">
+                                       <div class="col-md-12">
+                                          <div class="profile__address-item d-sm-flex align-items-start">
+                                             <div class="profile__address-icon">
+                                                <span>
+                                                   <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M8 0C3.58 0 0 3.58 0 8C0 13.54 7.36 19.56 7.64 19.76C7.74 19.85 7.87 19.9 8 19.9C8.13 19.9 8.26 19.85 8.36 19.76C8.64 19.56 16 13.54 16 8C16 3.58 12.42 0 8 0ZM8 11C6.34 11 5 9.66 5 8C5 6.34 6.34 5 8 5C9.66 5 11 6.34 11 8C11 9.66 9.66 11 8 11Z" fill="currentColor"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                             <div class="profile__address-content">
+                                                <h3 class="profile__address-title">Dirección Actual</h3>
+                                                <p><span>Dirección:</span> {{ address.address }}</p>
+                                                <p><span>Ciudad:</span> {{ address.city }}</p>
+                                                {% if address.state %}<p><span>Departamento:</span> {{ address.state }}</p>{% endif %}
+                                                {% if address.postal_code %}<p><span>Código postal:</span> {{ address.postal_code }}</p>{% endif %}
+                                                <p><span>País:</span> {{ address.country }}</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 {% endif %}
+
+                                 <h3 class="profile__info-title">{% if address %}Actualizar Dirección{% else %}Agregar Dirección{% endif %}</h3>
+                                 <form action="{% url 'store:profile' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tab" value="address">
+                                    <div class="row">
+                                       <div class="col-xxl-12">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="address" placeholder="Dirección completa" value="{{ address.address|default:'' }}">
+                                                <span>
+                                                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M7.99377 10.1461C9.39262 10.1461 10.5266 9.0283 10.5266 7.64946C10.5266 6.27061 9.39262 5.15283 7.99377 5.15283C6.59493 5.15283 5.46094 6.27061 5.46094 7.64946C5.46094 9.0283 6.59493 10.1461 7.99377 10.1461Z" stroke="currentColor" stroke-width="1.5"/>
+                                                      <path d="M1.19707 6.1933C2.79633 -0.736432 13.2118 -0.72843 14.803 6.2013C15.7365 10.2663 13.1712 13.7072 10.9225 15.8357C9.29079 17.3881 6.70924 17.3881 5.06939 15.8357C2.8288 13.7072 0.263493 10.2583 1.19707 6.1933Z" stroke="currentColor" stroke-width="1.5"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="city" placeholder="Ciudad" value="{{ address.city|default:'' }}">
+                                                <span>
+                                                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M7.99377 10.1461C9.39262 10.1461 10.5266 9.0283 10.5266 7.64946C10.5266 6.27061 9.39262 5.15283 7.99377 5.15283C6.59493 5.15283 5.46094 6.27061 5.46094 7.64946C5.46094 9.0283 6.59493 10.1461 7.99377 10.1461Z" stroke="currentColor" stroke-width="1.5"/>
+                                                      <path d="M1.19707 6.1933C2.79633 -0.736432 13.2118 -0.72843 14.803 6.2013C15.7365 10.2663 13.1712 13.7072 10.9225 15.8357C9.29079 17.3881 6.70924 17.3881 5.06939 15.8357C2.8288 13.7072 0.263493 10.2583 1.19707 6.1933Z" stroke="currentColor" stroke-width="1.5"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="state" placeholder="Departamento / Estado" value="{{ address.state|default:'' }}">
+                                                <span>
+                                                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M7.99377 10.1461C9.39262 10.1461 10.5266 9.0283 10.5266 7.64946C10.5266 6.27061 9.39262 5.15283 7.99377 5.15283C6.59493 5.15283 5.46094 6.27061 5.46094 7.64946C5.46094 9.0283 6.59493 10.1461 7.99377 10.1461Z" stroke="currentColor" stroke-width="1.5"/>
+                                                      <path d="M1.19707 6.1933C2.79633 -0.736432 13.2118 -0.72843 14.803 6.2013C15.7365 10.2663 13.1712 13.7072 10.9225 15.8357C9.29079 17.3881 6.70924 17.3881 5.06939 15.8357C2.8288 13.7072 0.263493 10.2583 1.19707 6.1933Z" stroke="currentColor" stroke-width="1.5"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="country" placeholder="País" value="{{ address.country|default:'Colombia' }}">
+                                                <span>
+                                                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M7.99377 10.1461C9.39262 10.1461 10.5266 9.0283 10.5266 7.64946C10.5266 6.27061 9.39262 5.15283 7.99377 5.15283C6.59493 5.15283 5.46094 6.27061 5.46094 7.64946C5.46094 9.0283 6.59493 10.1461 7.99377 10.1461Z" stroke="currentColor" stroke-width="1.5"/>
+                                                      <path d="M1.19707 6.1933C2.79633 -0.736432 13.2118 -0.72843 14.803 6.2013C15.7365 10.2663 13.1712 13.7072 10.9225 15.8357C9.29079 17.3881 6.70924 17.3881 5.06939 15.8357C2.8288 13.7072 0.263493 10.2583 1.19707 6.1933Z" stroke="currentColor" stroke-width="1.5"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-6 col-md-6">
+                                          <div class="profile__input-box">
+                                             <div class="profile__input">
+                                                <input type="text" name="postal_code" placeholder="Código postal" value="{{ address.postal_code|default:'' }}">
+                                                <span>
+                                                   <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M7.99377 10.1461C9.39262 10.1461 10.5266 9.0283 10.5266 7.64946C10.5266 6.27061 9.39262 5.15283 7.99377 5.15283C6.59493 5.15283 5.46094 6.27061 5.46094 7.64946C5.46094 9.0283 6.59493 10.1461 7.99377 10.1461Z" stroke="currentColor" stroke-width="1.5"/>
+                                                      <path d="M1.19707 6.1933C2.79633 -0.736432 13.2118 -0.72843 14.803 6.2013C15.7365 10.2663 13.1712 13.7072 10.9225 15.8357C9.29079 17.3881 6.70924 17.3881 5.06939 15.8357C2.8288 13.7072 0.263493 10.2583 1.19707 6.1933Z" stroke="currentColor" stroke-width="1.5"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-xxl-12">
+                                          <div class="profile__btn">
+                                             <button type="submit" class="tp-btn">Guardar Dirección</button>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </form>
+                              </div>
+                           </div>
+                        </div>
+
+                        <!-- tab: orders -->
+                        <div class="tab-pane fade {% if active_tab == 'orders' %}show active{% endif %}" id="nav-order" role="tabpanel" aria-labelledby="nav-order-tab">
+                           <div class="profile__ticket table-responsive">
+                              <table class="table">
+                                 <thead>
+                                    <tr>
+                                       <th scope="col">N° Pedido</th>
+                                       <th scope="col">Fecha</th>
+                                       <th scope="col">Total</th>
+                                       <th scope="col">Estado</th>
+                                       <th scope="col">Detalle</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    {% if orders %}
+                                       {% for order in orders %}
+                                       <tr>
+                                          <th scope="row">#{{ order.id }}</th>
+                                          <td data-info="title">{{ order.created_at|date:"d/m/Y" }}</td>
+                                          <td data-info="title">${{ order.total|floatformat:0 }}</td>
+                                          <td data-info="status {{ order.status }}">{{ order.get_status_display }}</td>
+                                          <td><a href="#" class="tp-logout-btn">Ver</a></td>
+                                       </tr>
+                                       {% endfor %}
+                                    {% else %}
+                                       <tr>
+                                          <td colspan="5" class="text-center py-5">
+                                             <div class="mb-15">
+                                                <i class="fa-light fa-clipboard-list-check" style="font-size: 48px; color: #c2c2c2;"></i>
+                                             </div>
+                                             <p style="color: #767a82;">Aún no tienes pedidos realizados.</p>
+                                             <a href="{% url 'store:home' %}" class="tp-btn mt-15">Ir a comprar</a>
+                                          </td>
+                                       </tr>
+                                    {% endif %}
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+
+                        <!-- tab: password -->
+                        <div class="tab-pane fade {% if active_tab == 'password' %}show active{% endif %}" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
+                           <div class="profile__password">
+                              <form action="{% url 'store:profile' %}" method="post">
+                                 {% csrf_token %}
+                                 <input type="hidden" name="tab" value="password">
+                                 <div class="row">
+                                    <div class="col-xxl-12">
+                                       <div class="tp-profile-input-box">
+                                          <div class="tp-contact-input">
+                                             <input name="current_password" id="old_pass" type="password" required>
+                                          </div>
+                                          <div class="tp-profile-input-title">
+                                             <label for="old_pass">Contraseña Actual</label>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="col-xxl-6 col-md-6">
+                                       <div class="tp-profile-input-box">
+                                          <div class="tp-profile-input">
+                                             <input name="new_password" id="new_pass" type="password" required>
+                                          </div>
+                                          <div class="tp-profile-input-title">
+                                             <label for="new_pass">Nueva Contraseña</label>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="col-xxl-6 col-md-6">
+                                       <div class="tp-profile-input-box">
+                                          <div class="tp-profile-input">
+                                             <input name="new_password2" id="con_new_pass" type="password" required>
+                                          </div>
+                                          <div class="tp-profile-input-title">
+                                             <label for="con_new_pass">Confirmar Contraseña</label>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div class="col-xxl-6 col-md-6">
+                                       <div class="profile__btn">
+                                          <button type="submit" class="tp-btn">Cambiar Contraseña</button>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </form>
+                           </div>
+                        </div>
+
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- profile area end -->
+
+</main>
+{% endblock %}
