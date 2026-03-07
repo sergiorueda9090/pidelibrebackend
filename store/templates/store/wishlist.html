@@ -1,0 +1,126 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Lista de Deseos — pidelibre{% endblock %}
+{% block meta_description %}Tu lista de deseos en pidelibre.{% endblock %}
+
+{% block content %}
+<main>
+
+   <!-- breadcrumb area start -->
+   <section class="breadcrumb__area include-bg pt-100 pb-50">
+      <div class="container">
+         <div class="row">
+            <div class="col-xxl-12">
+               <div class="breadcrumb__content p-relative z-index-1">
+                  <h3 class="breadcrumb__title">Lista de Deseos</h3>
+                  <div class="breadcrumb__list">
+                     <span><a href="{% url 'store:home' %}">Inicio</a></span>
+                     <span>Lista de Deseos</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- breadcrumb area end -->
+
+   <!-- wishlist area start -->
+   <section class="tp-cart-area pb-120">
+      <div class="container">
+         <div class="row">
+            <div class="col-xl-12">
+               <div class="tp-cart-list mb-45">
+                  <div id="pl-wishlist-empty" class="text-center py-5" style="display:none;">
+                     <div class="mb-20">
+                        <svg width="60" height="55" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" clip-rule="evenodd" d="M11.239 18.8538C13.4096 17.5179 15.4289 15.9456 17.2607 14.1652C18.5486 12.8829 19.529 11.3198 20.1269 9.59539C21.2029 6.25031 19.9461 2.42083 16.4289 1.28752C14.5804 0.692435 12.5616 1.03255 11.0039 2.20148C9.44567 1.03398 7.42754 0.693978 5.57894 1.28752C2.06175 2.42083 0.795919 6.25031 1.87187 9.59539C2.46978 11.3198 3.45021 12.8829 4.73806 14.1652C6.56988 15.9456 8.58917 17.5179 10.7598 18.8538L10.9949 19L11.239 18.8538Z" stroke="#c2c2c2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                     </div>
+                     <p style="color: #767a82; font-size: 16px;">Tu lista de deseos está vacía.</p>
+                     <a href="{% url 'store:home' %}" class="tp-btn mt-20">Ir a la Tienda</a>
+                  </div>
+                  <table id="pl-wishlist-table" class="table table-responsive" style="display:none;">
+                     <thead>
+                        <tr>
+                           <th></th>
+                           <th class="tp-cart-header-product">Producto</th>
+                           <th>Precio</th>
+                           <th></th>
+                           <th></th>
+                        </tr>
+                     </thead>
+                     <tbody id="pl-wishlist-body">
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- wishlist area end -->
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+   function renderWishlist() {
+      var list = PL.getWish();
+      var empty = document.getElementById('pl-wishlist-empty');
+      var table = document.getElementById('pl-wishlist-table');
+      var tbody = document.getElementById('pl-wishlist-body');
+
+      if (list.length === 0) {
+         empty.style.display = 'block';
+         table.style.display = 'none';
+         return;
+      }
+
+      empty.style.display = 'none';
+      table.style.display = 'table';
+
+      var html = '';
+      for (var i = 0; i < list.length; i++) {
+         var w = list[i];
+         var priceStr = w.price ? '$' + parseInt(w.price).toLocaleString('es-CO') : '';
+         html += '<tr>' +
+            '<td class="tp-cart-img"><a href="/producto/' + w.slug + '/"><img src="' + (w.image || '') + '" alt="' + w.name + '" style="width:70px;height:70px;object-fit:cover;border-radius:4px;"></a></td>' +
+            '<td class="tp-cart-title"><a href="/producto/' + w.slug + '/">' + w.name + '</a></td>' +
+            '<td class="tp-cart-price"><span>' + priceStr + '</span></td>' +
+            '<td><button class="tp-cart-action-btn" onclick="addWishToCart(' + w.id + ')"><i class="fa-regular fa-cart-plus"></i> Agregar al carrito</button></td>' +
+            '<td><button class="tp-cart-action-btn" onclick="removeWishItem(' + w.id + ')"><i class="fa-regular fa-xmark"></i></button></td>' +
+         '</tr>';
+      }
+      tbody.innerHTML = html;
+   }
+
+   window.removeWishItem = function(id) {
+      PL.removeFromWish(id);
+      renderWishlist();
+   };
+
+   window.addWishToCart = function(id) {
+      var list = PL.getWish();
+      for (var i = 0; i < list.length; i++) {
+         if (list[i].id === id) {
+            PL.addToCart({
+               id: list[i].id,
+               variantId: 0,
+               name: list[i].name,
+               slug: list[i].slug,
+               price: list[i].price,
+               comparePrice: list[i].comparePrice,
+               image: list[i].image,
+               qty: 1,
+            });
+            break;
+         }
+      }
+   };
+
+   renderWishlist();
+})();
+</script>
+{% endblock %}

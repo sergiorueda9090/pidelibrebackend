@@ -304,7 +304,7 @@
                         </ul>
                      </div>
                      <div class="tp-product-details-action-sm">
-                        <button type="button" class="tp-product-details-action-sm-btn">
+                        <button id="js-add-to-wishlist" type="button" class="tp-product-details-action-sm-btn">
                            <svg width="17" height="16" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path fill-rule="evenodd" clip-rule="evenodd" d="M2.33541 7.54172C3.36263 10.6766 7.42094 13.2113 8.49945 13.8387C9.58162 13.2048 13.6692 10.6421 14.6635 7.5446C15.3163 5.54239 14.7104 3.00621 12.3028 2.24514C11.1364 1.8779 9.77578 2.1014 8.83648 2.81432C8.64012 2.96237 8.36757 2.96524 8.16974 2.81863C7.17476 2.08487 5.87499 1.86999 4.69024 2.24514C2.28632 3.00549 1.68259 5.54167 2.33541 7.54172ZM8.50115 15C8.4103 15 8.32018 14.9784 8.23812 14.9346C8.00879 14.8117 2.60674 11.891 1.29011 7.87081C0.462913 5.33895 1.38316 2.15812 4.35418 1.21882C5.7492 0.776121 7.26952 0.97088 8.49895 1.73195C9.69029 0.993159 11.2729 0.789057 12.6401 1.21882C15.614 2.15956 16.5372 5.33966 15.7115 7.8701C14.4373 11.8443 8.99571 14.8088 8.76492 14.9332C8.68286 14.9777 8.592 15 8.50115 15Z" fill="currentColor"/>
                            </svg>
@@ -1018,6 +1018,63 @@
          // Only allow digits
          if (e.key < '0' || e.key > '9') e.preventDefault();
       });
+   }
+
+   // ---- Cart & Wishlist integration ----
+   if (typeof PL !== 'undefined') {
+      // Add to cart
+      if ($cartBtn) {
+         $cartBtn.addEventListener('click', function() {
+            var qty = parseInt($qty.value, 10) || 1;
+            var selected = getSelectedAttributes();
+            var variant = findMatchingVariant(selected);
+
+            var item = {
+               id: {{ product.id }},
+               variantId: variant ? variant.id : 0,
+               name: '{{ product.name|escapejs }}',
+               slug: '{{ product.slug|escapejs }}',
+               price: variant ? variant.price : PRODUCT_DATA.product_price,
+               comparePrice: variant ? variant.compare_price : PRODUCT_DATA.product_compare_price,
+               image: {% if product.image %}'{{ product.image.url|escapejs }}'{% else %}''{% endif %},
+               qty: qty,
+               sku: variant ? variant.sku : '{{ product.sku|default:""|escapejs }}',
+               attributes: variant ? variant.attributes : {},
+            };
+
+            if (variant && variant.image_url) {
+               item.image = variant.image_url;
+            }
+
+            PL.addToCart(item);
+         });
+      }
+
+      // Wishlist
+      var $wishBtn = document.getElementById('js-add-to-wishlist');
+      if ($wishBtn) {
+         var pid = {{ product.id }};
+         if (PL.isInWish(pid)) {
+            $wishBtn.classList.add('active');
+         }
+         $wishBtn.addEventListener('click', function() {
+            if (PL.isInWish(pid)) {
+               PL.removeFromWish(pid);
+               $wishBtn.classList.remove('active');
+               PL.showToast('Eliminado de la lista de deseos');
+            } else {
+               PL.addToWish({
+                  id: pid,
+                  name: '{{ product.name|escapejs }}',
+                  slug: '{{ product.slug|escapejs }}',
+                  price: PRODUCT_DATA.product_price,
+                  comparePrice: PRODUCT_DATA.product_compare_price,
+                  image: {% if product.image %}'{{ product.image.url|escapejs }}'{% else %}''{% endif %},
+               });
+               $wishBtn.classList.add('active');
+            }
+         });
+      }
    }
 })();
 </script>

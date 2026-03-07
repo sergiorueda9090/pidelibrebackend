@@ -303,6 +303,27 @@ def logout_view(request):
     return redirect('store:home')
 
 
+def wishlist_view(request):
+    return render(request, 'store/wishlist.html')
+
+
+def cart_view(request):
+    return render(request, 'store/cart.html')
+
+
+def checkout_view(request):
+    customer = None
+    address = None
+    if request.user.is_authenticated:
+        customer = getattr(request.user, 'customer', None)
+        if customer:
+            address = customer.addresses.first()
+    return render(request, 'store/checkout.html', {
+        'customer': customer,
+        'address': address,
+    })
+
+
 @login_required(login_url='/cuenta/ingresar/')
 def profile_view(request):
     customer, _ = Customer.objects.get_or_create(

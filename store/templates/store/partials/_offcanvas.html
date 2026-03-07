@@ -75,7 +75,7 @@
          </div>
          <div class="col">
             <div class="tp-mobile-item text-center">
-               <a href="#" class="tp-mobile-item-btn">
+               <a href="{% url 'store:wishlist' %}" class="tp-mobile-item-btn">
                   <i class="flaticon-love"></i>
                   <span>Favoritos</span>
                </a>
@@ -83,7 +83,7 @@
          </div>
          <div class="col">
             <div class="tp-mobile-item text-center">
-               <a href="#" class="tp-mobile-item-btn">
+               <a href="{% if request.user.is_authenticated %}{% url 'store:profile' %}{% else %}{% url 'store:login' %}{% endif %}" class="tp-mobile-item-btn">
                   <i class="flaticon-user"></i>
                   <span>Cuenta</span>
                </a>
@@ -156,8 +156,8 @@
             <span>$0.00</span>
          </div>
          <div class="cartmini__checkout-btn">
-            <a href="#" class="tp-btn mb-10 w-100">Ver carrito</a>
-            <a href="#" class="tp-btn tp-btn-border w-100">Checkout</a>
+            <a href="{% url 'store:cart' %}" class="tp-btn mb-10 w-100">Ver carrito</a>
+            <a href="{% url 'store:checkout' %}" class="tp-btn tp-btn-border w-100">Checkout</a>
          </div>
       </div>
    </div>

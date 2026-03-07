@@ -11,4 +11,7 @@ urlpatterns = [
     path('cuenta/ingresar/', views.login_view, name='login'),
     path('cuenta/salir/', views.logout_view, name='logout'),
     path('cuenta/perfil/', views.profile_view, name='profile'),
+    path('lista-de-deseos/', views.wishlist_view, name='wishlist'),
+    path('carrito/', views.cart_view, name='cart'),
+    path('checkout/', views.checkout_view, name='checkout'),
 ]

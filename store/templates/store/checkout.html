@@ -1,0 +1,270 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Checkout — pidelibre{% endblock %}
+{% block meta_description %}Finaliza tu compra en pidelibre.{% endblock %}
+
+{% block content %}
+<main>
+
+   <!-- breadcrumb area start -->
+   <section class="breadcrumb__area include-bg pt-100 pb-50">
+      <div class="container">
+         <div class="row">
+            <div class="col-xxl-12">
+               <div class="breadcrumb__content p-relative z-index-1">
+                  <h3 class="breadcrumb__title">Checkout</h3>
+                  <div class="breadcrumb__list">
+                     <span><a href="{% url 'store:home' %}">Inicio</a></span>
+                     <span><a href="{% url 'store:cart' %}">Carrito</a></span>
+                     <span>Checkout</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- breadcrumb area end -->
+
+   <!-- checkout area start -->
+   <section class="tp-checkout-area pb-120">
+      <div class="container">
+         <!-- empty redirect -->
+         <div id="pl-checkout-empty" class="text-center py-5" style="display:none;">
+            <p style="color: #767a82; font-size: 16px;">Tu carrito esta vacio. Agrega productos antes de continuar.</p>
+            <a href="{% url 'store:home' %}" class="tp-btn mt-20">Ir a la Tienda</a>
+         </div>
+
+         <div id="pl-checkout-content" style="display:none;">
+            <div class="row">
+               <div class="col-lg-7">
+                  <div class="tp-checkout-bill-area">
+                     <h3 class="tp-checkout-bill-title">Datos de Facturacion</h3>
+                     <div class="tp-checkout-bill-form">
+                        <form id="pl-checkout-form" action="#" onsubmit="return false;">
+                           <div class="tp-checkout-bill-inner">
+                              <div class="row">
+                                 <div class="col-md-6">
+                                    <div class="tp-checkout-input">
+                                       <label>Nombre <span>*</span></label>
+                                       <input type="text" id="ch-first-name" placeholder="Nombre" value="{{ customer.first_name|default:'' }}" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-md-6">
+                                    <div class="tp-checkout-input">
+                                       <label>Apellido <span>*</span></label>
+                                       <input type="text" id="ch-last-name" placeholder="Apellido" value="{{ customer.last_name|default:'' }}" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Documento de identidad</label>
+                                       <input type="text" id="ch-document" placeholder="CC / NIT" value="{{ customer.document_number|default:'' }}">
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Pais / Region</label>
+                                       <input type="text" id="ch-country" placeholder="Colombia" value="{{ address.country|default:'Colombia' }}">
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Direccion <span>*</span></label>
+                                       <input type="text" id="ch-address" placeholder="Calle, numero, barrio" value="{{ address.address|default:'' }}" required>
+                                    </div>
+                                    <div class="tp-checkout-input">
+                                       <input type="text" id="ch-address2" placeholder="Apartamento, oficina, etc. (opcional)">
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Ciudad <span>*</span></label>
+                                       <input type="text" id="ch-city" placeholder="Ciudad" value="{{ address.city|default:'' }}" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-md-6">
+                                    <div class="tp-checkout-input">
+                                       <label>Departamento</label>
+                                       <input type="text" id="ch-state" placeholder="Departamento" value="{{ address.state|default:'' }}">
+                                    </div>
+                                 </div>
+                                 <div class="col-md-6">
+                                    <div class="tp-checkout-input">
+                                       <label>Codigo Postal</label>
+                                       <input type="text" id="ch-postal" placeholder="" value="{{ address.postal_code|default:'' }}">
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Telefono <span>*</span></label>
+                                       <input type="text" id="ch-phone" placeholder="" value="{{ customer.phone|default:'' }}" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Correo electronico <span>*</span></label>
+                                       <input type="email" id="ch-email" placeholder="" value="{{ customer.email|default:'' }}" required>
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <div class="tp-checkout-input">
+                                       <label>Notas del pedido (opcional)</label>
+                                       <textarea id="ch-notes" placeholder="Notas sobre tu pedido, ej. instrucciones especiales de entrega."></textarea>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </form>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-5">
+                  <div class="tp-checkout-place white-bg">
+                     <h3 class="tp-checkout-place-title">Tu Pedido</h3>
+                     <div class="tp-order-info-list">
+                        <ul>
+                           <li class="tp-order-info-list-header">
+                              <h4>Producto</h4>
+                              <h4>Total</h4>
+                           </li>
+                           <div id="pl-checkout-items"></div>
+                           <li class="tp-order-info-list-subtotal">
+                              <span>Subtotal</span>
+                              <span id="pl-checkout-subtotal">$0</span>
+                           </li>
+                           <li class="tp-order-info-list-shipping">
+                              <span>Envio</span>
+                              <div class="tp-order-info-list-shipping-item d-flex flex-column align-items-end">
+                                 <span>
+                                    <input id="ch_flat_rate" type="radio" name="ch_shipping" value="10000" checked onchange="updateCheckoutTotals()">
+                                    <label for="ch_flat_rate">Envio estandar: <span>$10.000</span></label>
+                                 </span>
+                                 <span>
+                                    <input id="ch_free_shipping" type="radio" name="ch_shipping" value="0" onchange="updateCheckoutTotals()">
+                                    <label for="ch_free_shipping">Envio gratis (+$100.000)</label>
+                                 </span>
+                              </div>
+                           </li>
+                           <li class="tp-order-info-list-total">
+                              <span>Total</span>
+                              <span id="pl-checkout-total">$0</span>
+                           </li>
+                        </ul>
+                     </div>
+                     <div class="tp-checkout-payment">
+                        <div class="tp-checkout-payment-item">
+                           <input type="radio" id="bank_transfer" name="payment" checked>
+                           <label for="bank_transfer">Transferencia Bancaria</label>
+                           <div class="tp-checkout-payment-desc">
+                              <p>Realiza tu pago directamente en nuestra cuenta bancaria. Usa el numero de pedido como referencia. Tu pedido se procesara una vez confirmado el pago.</p>
+                           </div>
+                        </div>
+                        <div class="tp-checkout-payment-item">
+                           <input type="radio" id="cod" name="payment">
+                           <label for="cod">Pago Contra Entrega</label>
+                           <div class="tp-checkout-payment-desc">
+                              <p>Paga en efectivo al momento de recibir tu pedido.</p>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="tp-checkout-agree">
+                        <div class="tp-checkout-option">
+                           <input id="read_all" type="checkbox">
+                           <label for="read_all">He leido y acepto los terminos y condiciones.</label>
+                        </div>
+                     </div>
+                     <div class="tp-checkout-btn-wrapper">
+                        <button class="tp-checkout-btn w-100" onclick="placeOrder()">Realizar Pedido</button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- checkout area end -->
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+   function fmtPrice(n) {
+      return '$' + parseInt(n).toLocaleString('es-CO');
+   }
+
+   function renderCheckout() {
+      var cart = PL.getCart();
+      var emptyEl = document.getElementById('pl-checkout-empty');
+      var contentEl = document.getElementById('pl-checkout-content');
+
+      if (cart.length === 0) {
+         emptyEl.style.display = 'block';
+         contentEl.style.display = 'none';
+         return;
+      }
+
+      emptyEl.style.display = 'none';
+      contentEl.style.display = 'block';
+
+      var itemsHtml = '';
+      for (var i = 0; i < cart.length; i++) {
+         var c = cart[i];
+         var lineTotal = c.price * c.qty;
+         itemsHtml += '<li class="tp-order-info-list-desc">' +
+            '<p>' + c.name + ' <span> x ' + c.qty + '</span></p>' +
+            '<span>' + fmtPrice(lineTotal) + '</span>' +
+         '</li>';
+      }
+      document.getElementById('pl-checkout-items').innerHTML = itemsHtml;
+      updateCheckoutTotals();
+   }
+
+   window.updateCheckoutTotals = function() {
+      var subtotal = PL.getCartTotal();
+      var shippingEl = document.querySelector('input[name="ch_shipping"]:checked');
+      var shipping = shippingEl ? parseInt(shippingEl.value) : 0;
+
+      if (subtotal >= 100000) {
+         var freeEl = document.getElementById('ch_free_shipping');
+         if (freeEl) freeEl.checked = true;
+         shipping = 0;
+      }
+
+      document.getElementById('pl-checkout-subtotal').textContent = fmtPrice(subtotal);
+      document.getElementById('pl-checkout-total').textContent = fmtPrice(subtotal + shipping);
+   };
+
+   window.placeOrder = function() {
+      var agree = document.getElementById('read_all');
+      if (!agree.checked) {
+         PL.showToast('Debes aceptar los terminos y condiciones.');
+         return;
+      }
+
+      var firstName = document.getElementById('ch-first-name').value.trim();
+      var lastName = document.getElementById('ch-last-name').value.trim();
+      var address = document.getElementById('ch-address').value.trim();
+      var city = document.getElementById('ch-city').value.trim();
+      var phone = document.getElementById('ch-phone').value.trim();
+      var email = document.getElementById('ch-email').value.trim();
+
+      if (!firstName || !lastName || !address || !city || !phone || !email) {
+         PL.showToast('Completa todos los campos obligatorios.');
+         return;
+      }
+
+      // TODO: enviar pedido al backend via AJAX cuando exista el endpoint
+      PL.showToast('Pedido realizado con exito. Te contactaremos pronto.');
+      PL.clearCart();
+      setTimeout(function() {
+         window.location.href = '{% url "store:home" %}';
+      }, 2000);
+   };
+
+   renderCheckout();
+})();
+</script>
+{% endblock %}

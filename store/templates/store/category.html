@@ -102,7 +102,7 @@
                            <div class="row">
                               {% for product in products %}
                               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-                                 <div class="tp-product-item-2 mb-40">
+                                 <div class="tp-product-item-2 mb-40" data-pl-id="{{ product.id }}" data-pl-name="{{ product.name }}" data-pl-slug="{{ product.slug }}" data-pl-price="{{ product.display_price|default:0 }}" data-pl-compare-price="{{ product.display_compare_price|default:'' }}" data-pl-image="{% if product.image %}{{ product.image.url }}{% endif %}">
                                     <div class="tp-product-thumb-2 p-relative z-index-1 fix w-img">
                                        <a href="{% url 'store:product_detail' product.slug %}">
                                           {% if product.image %}

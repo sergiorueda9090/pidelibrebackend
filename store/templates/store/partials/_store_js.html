@@ -1,0 +1,336 @@
+<script>
+// ===================================================================
+//  pidelibre Store — Cart & Wishlist (localStorage)
+// ===================================================================
+var PL = (function() {
+   var CART_KEY = 'pidelibre-cart';
+   var WISH_KEY = 'pidelibre-wishlist';
+
+   // ---------- helpers ----------
+   function getCart() {
+      try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+      catch(e) { return []; }
+   }
+   function saveCart(cart) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      updateCartUI();
+   }
+   function getWish() {
+      try { return JSON.parse(localStorage.getItem(WISH_KEY)) || []; }
+      catch(e) { return []; }
+   }
+   function saveWish(list) {
+      localStorage.setItem(WISH_KEY, JSON.stringify(list));
+      updateWishUI();
+   }
+
+   // ---------- cart ----------
+   function addToCart(item) {
+      // item: { id, variantId, name, price, comparePrice, image, slug, qty, sku, attributes }
+      var cart = getCart();
+      var key = item.id + '-' + (item.variantId || 0);
+      var found = false;
+      for (var i = 0; i < cart.length; i++) {
+         var ck = cart[i].id + '-' + (cart[i].variantId || 0);
+         if (ck === key) {
+            cart[i].qty += (item.qty || 1);
+            found = true;
+            break;
+         }
+      }
+      if (!found) {
+         item.qty = item.qty || 1;
+         cart.push(item);
+      }
+      saveCart(cart);
+      showToast('Producto agregado al carrito');
+      return cart;
+   }
+
+   function removeFromCart(productId, variantId) {
+      var cart = getCart();
+      var key = productId + '-' + (variantId || 0);
+      cart = cart.filter(function(c) {
+         return (c.id + '-' + (c.variantId || 0)) !== key;
+      });
+      saveCart(cart);
+      return cart;
+   }
+
+   function updateCartQty(productId, variantId, qty) {
+      var cart = getCart();
+      var key = productId + '-' + (variantId || 0);
+      for (var i = 0; i < cart.length; i++) {
+         var ck = cart[i].id + '-' + (cart[i].variantId || 0);
+         if (ck === key) {
+            if (qty <= 0) {
+               cart.splice(i, 1);
+            } else {
+               cart[i].qty = qty;
+            }
+            break;
+         }
+      }
+      saveCart(cart);
+      return cart;
+   }
+
+   function getCartTotal() {
+      var cart = getCart();
+      var total = 0;
+      for (var i = 0; i < cart.length; i++) {
+         total += (cart[i].price || 0) * (cart[i].qty || 1);
+      }
+      return total;
+   }
+
+   function getCartCount() {
+      var cart = getCart();
+      var count = 0;
+      for (var i = 0; i < cart.length; i++) {
+         count += (cart[i].qty || 1);
+      }
+      return count;
+   }
+
+   function clearCart() {
+      localStorage.removeItem(CART_KEY);
+      updateCartUI();
+   }
+
+   // ---------- wishlist ----------
+   function addToWish(item) {
+      // item: { id, name, price, comparePrice, image, slug }
+      var list = getWish();
+      for (var i = 0; i < list.length; i++) {
+         if (list[i].id === item.id) {
+            showToast('Ya está en tu lista de deseos');
+            return list;
+         }
+      }
+      list.push(item);
+      saveWish(list);
+      showToast('Agregado a lista de deseos');
+      return list;
+   }
+
+   function removeFromWish(productId) {
+      var list = getWish();
+      list = list.filter(function(w) { return w.id !== productId; });
+      saveWish(list);
+      return list;
+   }
+
+   function isInWish(productId) {
+      var list = getWish();
+      for (var i = 0; i < list.length; i++) {
+         if (list[i].id === productId) return true;
+      }
+      return false;
+   }
+
+   function getWishCount() {
+      return getWish().length;
+   }
+
+   function clearWish() {
+      localStorage.removeItem(WISH_KEY);
+      updateWishUI();
+   }
+
+   // ---------- UI updates ----------
+   function updateCartUI() {
+      var count = getCartCount();
+      // header badge
+      var badges = document.querySelectorAll('.tp-header-action-badge, .pl-cart-count');
+      for (var i = 0; i < badges.length; i++) {
+         badges[i].textContent = count;
+      }
+      // mini cart
+      renderMiniCart();
+   }
+
+   function updateWishUI() {
+      var count = getWishCount();
+      var badges = document.querySelectorAll('.pl-wish-count');
+      for (var i = 0; i < badges.length; i++) {
+         badges[i].textContent = count;
+      }
+      // mark active hearts
+      var btns = document.querySelectorAll('[data-pl-wish-id]');
+      for (var i = 0; i < btns.length; i++) {
+         var pid = parseInt(btns[i].getAttribute('data-pl-wish-id'));
+         if (isInWish(pid)) {
+            btns[i].classList.add('active');
+         } else {
+            btns[i].classList.remove('active');
+         }
+      }
+   }
+
+   function renderMiniCart() {
+      var cart = getCart();
+      var widget = document.querySelector('.cartmini__widget');
+      var checkoutTitle = document.querySelector('.cartmini__checkout-title span');
+      if (!widget) return;
+
+      if (cart.length === 0) {
+         widget.innerHTML = '<div class="cartmini__empty text-center">' +
+            '<p>Tu carrito está vacío</p>' +
+            '<a href="/" class="tp-btn">Ir a la Tienda</a>' +
+            '</div>';
+         if (checkoutTitle) checkoutTitle.textContent = '$0';
+         return;
+      }
+
+      var html = '';
+      for (var i = 0; i < cart.length; i++) {
+         var c = cart[i];
+         var subtotal = (c.price || 0) * (c.qty || 1);
+         html += '<div class="cartmini__widget-item">' +
+            '<div class="cartmini__thumb">' +
+               '<a href="/producto/' + c.slug + '/">' +
+                  '<img src="' + (c.image || '') + '" alt="' + c.name + '">' +
+               '</a>' +
+            '</div>' +
+            '<div class="cartmini__content">' +
+               '<h5 class="cartmini__title"><a href="/producto/' + c.slug + '/">' + c.name + '</a></h5>' +
+               '<div class="cartmini__price-wrapper">' +
+                  '<span class="cartmini__price">$' + subtotal.toLocaleString('es-CO') + '</span>' +
+                  '<span class="cartmini__quantity"> x ' + c.qty + '</span>' +
+               '</div>' +
+            '</div>' +
+            '<a href="javascript:void(0)" class="cartmini__del" onclick="PL.removeFromCart(' + c.id + ',' + (c.variantId || 0) + ')">' +
+               '<i class="fa-regular fa-xmark"></i>' +
+            '</a>' +
+         '</div>';
+      }
+      widget.innerHTML = html;
+
+      var total = getCartTotal();
+      if (checkoutTitle) checkoutTitle.textContent = '$' + total.toLocaleString('es-CO');
+   }
+
+   // ---------- toast ----------
+   function showToast(msg) {
+      var existing = document.getElementById('pl-toast');
+      if (existing) existing.remove();
+
+      var toast = document.createElement('div');
+      toast.id = 'pl-toast';
+      toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);' +
+         'background:#0989ff;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;' +
+         'font-size:14px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.15);' +
+         'transition:opacity .3s;opacity:0;';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(function() { toast.style.opacity = '1'; }, 10);
+      setTimeout(function() {
+         toast.style.opacity = '0';
+         setTimeout(function() { toast.remove(); }, 300);
+      }, 2500);
+   }
+
+   // ---------- merge (al login/registro) ----------
+   function getMergeData() {
+      return { cart: getCart(), wishlist: getWish() };
+   }
+
+   function clearAll() {
+      clearCart();
+      clearWish();
+   }
+
+   // ---------- init ----------
+   function init() {
+      updateCartUI();
+      updateWishUI();
+   }
+
+   // ---------- event delegation for product cards ----------
+   function handleCardButtons() {
+      document.addEventListener('click', function(e) {
+         // find closest action button
+         var cartBtn = e.target.closest('.tp-product-add-cart-btn');
+         var wishBtn = e.target.closest('.tp-product-add-to-wishlist-btn');
+
+         if (!cartBtn && !wishBtn) return;
+
+         var card = (cartBtn || wishBtn).closest('[data-pl-id]');
+         if (!card) return;
+
+         var data = {
+            id: parseInt(card.getAttribute('data-pl-id')),
+            name: card.getAttribute('data-pl-name'),
+            slug: card.getAttribute('data-pl-slug'),
+            price: parseFloat(card.getAttribute('data-pl-price')) || 0,
+            comparePrice: parseFloat(card.getAttribute('data-pl-compare-price')) || null,
+            image: card.getAttribute('data-pl-image') || '',
+         };
+
+         if (cartBtn) {
+            addToCart({
+               id: data.id,
+               variantId: 0,
+               name: data.name,
+               slug: data.slug,
+               price: data.price,
+               comparePrice: data.comparePrice,
+               image: data.image,
+               qty: 1,
+            });
+         }
+
+         if (wishBtn) {
+            if (isInWish(data.id)) {
+               removeFromWish(data.id);
+               showToast('Eliminado de la lista de deseos');
+            } else {
+               addToWish({
+                  id: data.id,
+                  name: data.name,
+                  slug: data.slug,
+                  price: data.price,
+                  comparePrice: data.comparePrice,
+                  image: data.image,
+               });
+            }
+         }
+      });
+   }
+
+   // run on DOMContentLoaded
+   if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() { init(); handleCardButtons(); });
+   } else {
+      init();
+      handleCardButtons();
+   }
+
+   return {
+      // cart
+      addToCart: addToCart,
+      removeFromCart: removeFromCart,
+      updateCartQty: updateCartQty,
+      getCart: getCart,
+      getCartTotal: getCartTotal,
+      getCartCount: getCartCount,
+      clearCart: clearCart,
+      // wishlist
+      addToWish: addToWish,
+      removeFromWish: removeFromWish,
+      isInWish: isInWish,
+      getWish: getWish,
+      getWishCount: getWishCount,
+      clearWish: clearWish,
+      // ui
+      updateCartUI: updateCartUI,
+      updateWishUI: updateWishUI,
+      // merge
+      getMergeData: getMergeData,
+      clearAll: clearAll,
+      // toast
+      showToast: showToast,
+   };
+})();
+</script>
