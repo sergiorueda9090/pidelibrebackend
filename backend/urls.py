@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/slider/',             include('slider.api.urls'), name='slider_api'),
     path('api/tp-feature-area/',    include('tp_feature_area.api.urls'), name='tp_feature_area_api'),
     path('api/footer/',             include('footer.api.urls'), name='footer_api'),
+    path('api/',                     include('departamento_municipio.urls')),
 ]
 
 handler404 = 'store.views.custom_404'

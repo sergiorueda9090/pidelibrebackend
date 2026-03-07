@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'slider',
     'tp_feature_area',
     'footer',
+    'departamento_municipio',
 ]
 
 MIDDLEWARE = [

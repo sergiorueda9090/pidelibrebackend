@@ -4,6 +4,43 @@
 {% block title %}Checkout — pidelibre{% endblock %}
 {% block meta_description %}Finaliza tu compra en pidelibre.{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<style>
+   .select2-container--default .select2-selection--single {
+      height: 50px;
+      border: 1px solid #e0e2e3;
+      border-radius: 0;
+      padding: 10px 15px;
+   }
+   .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 28px;
+      color: #55585b;
+      padding-left: 0;
+   }
+   .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 48px;
+      right: 10px;
+   }
+   .select2-container { width: 100% !important; }
+   .select2-search--dropdown .select2-search__field {
+      padding: 8px 12px;
+      border: 1px solid #e0e2e3;
+   }
+   .select2-results__option--highlighted[aria-selected] {
+      background-color: #821f40 !important;
+   }
+   .tp-checkout-payment-card:hover {
+      border-color: #821f40 !important;
+   }
+   .tp-checkout-payment-card.active {
+      border-color: #821f40 !important;
+      background-color: #fdf2f5;
+      box-shadow: 0 0 0 1px #821f40;
+   }
+</style>
+{% endblock %}
+
 {% block content %}
 <main>
 
@@ -77,16 +114,20 @@
                                        <input type="text" id="ch-address2" placeholder="Apartamento, oficina, etc. (opcional)">
                                     </div>
                                  </div>
-                                 <div class="col-md-12">
+                                 <div class="col-md-6">
                                     <div class="tp-checkout-input">
-                                       <label>Ciudad <span>*</span></label>
-                                       <input type="text" id="ch-city" placeholder="Ciudad" value="{{ address.city|default:'' }}" required>
+                                       <label>Departamento <span>*</span></label>
+                                       <select id="ch-state" required>
+                                          <option value="">Selecciona un departamento</option>
+                                       </select>
                                     </div>
                                  </div>
                                  <div class="col-md-6">
                                     <div class="tp-checkout-input">
-                                       <label>Departamento</label>
-                                       <input type="text" id="ch-state" placeholder="Departamento" value="{{ address.state|default:'' }}">
+                                       <label>Ciudad <span>*</span></label>
+                                       <select id="ch-city" required disabled>
+                                          <option value="">Primero selecciona un departamento</option>
+                                       </select>
                                     </div>
                                  </div>
                                  <div class="col-md-6">
@@ -153,19 +194,23 @@
                         </ul>
                      </div>
                      <div class="tp-checkout-payment">
-                        <div class="tp-checkout-payment-item">
-                           <input type="radio" id="bank_transfer" name="payment" checked>
-                           <label for="bank_transfer">Transferencia Bancaria</label>
-                           <div class="tp-checkout-payment-desc">
-                              <p>Realiza tu pago directamente en nuestra cuenta bancaria. Usa el numero de pedido como referencia. Tu pedido se procesara una vez confirmado el pago.</p>
-                           </div>
-                        </div>
-                        <div class="tp-checkout-payment-item">
-                           <input type="radio" id="cod" name="payment">
-                           <label for="cod">Pago Contra Entrega</label>
-                           <div class="tp-checkout-payment-desc">
-                              <p>Paga en efectivo al momento de recibir tu pedido.</p>
-                           </div>
+                        <h4 class="tp-checkout-payment-title" style="font-size:16px;font-weight:600;margin-bottom:15px;">Metodo de Pago</h4>
+                        <div class="tp-checkout-payment-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px;">
+                           <label for="pay_wompi" class="tp-checkout-payment-card active" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
+                              <input type="radio" id="pay_wompi" name="payment" value="wompi" checked style="display:none;">
+                              <img src="{% static 'img/pasarelasPago/wompi.jpg' %}" alt="Wompi" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
+                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">Wompi</span>
+                           </label>
+                           <label for="pay_mercadopago" class="tp-checkout-payment-card" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
+                              <input type="radio" id="pay_mercadopago" name="payment" value="mercadopago" style="display:none;">
+                              <img src="{% static 'img/pasarelasPago/mercado_pago.png' %}" alt="Mercado Pago" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
+                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">Mercado Pago</span>
+                           </label>
+                           <label for="pay_paypal" class="tp-checkout-payment-card" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
+                              <input type="radio" id="pay_paypal" name="payment" value="paypal" style="display:none;">
+                              <img src="{% static 'img/pasarelasPago/paypal.png' %}" alt="PayPal" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
+                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">PayPal</span>
+                           </label>
                         </div>
                      </div>
                      <div class="tp-checkout-agree">
@@ -184,11 +229,12 @@
       </div>
    </section>
    <!-- checkout area end -->
-
+   
 </main>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 (function() {
    function fmtPrice(n) {
@@ -213,8 +259,14 @@
       for (var i = 0; i < cart.length; i++) {
          var c = cart[i];
          var lineTotal = c.price * c.qty;
+         var imgHtml = c.image
+            ? '<img src="' + c.image + '" alt="' + c.name + '" style="width:50px;height:50px;object-fit:cover;border-radius:4px;margin-right:10px;">'
+            : '';
          itemsHtml += '<li class="tp-order-info-list-desc">' +
-            '<p>' + c.name + ' <span> x ' + c.qty + '</span></p>' +
+            '<div style="display:flex;align-items:center;">' +
+               imgHtml +
+               '<p style="margin:0;">' + c.name + ' <span> x ' + c.qty + '</span></p>' +
+            '</div>' +
             '<span>' + fmtPrice(lineTotal) + '</span>' +
          '</li>';
       }
@@ -263,6 +315,61 @@
          window.location.href = '{% url "store:home" %}';
       }, 2000);
    };
+
+   // --- Departamentos y Municipios (Select2 con buscador) ---
+   var $state = $('#ch-state');
+   var $city = $('#ch-city');
+
+   // Quitar NiceSelect de estos dos selects
+   $state.niceSelect('destroy');
+   $city.niceSelect('destroy');
+
+   // Inicializar Select2
+   $state.select2({ placeholder: 'Selecciona un departamento', allowClear: true });
+   $city.select2({ placeholder: 'Primero selecciona un departamento', allowClear: true });
+
+   fetch('/api/departamentos/')
+      .then(function(r) { return r.json(); })
+      .then(function(deps) {
+         for (var i = 0; i < deps.length; i++) {
+            $state.append('<option value="' + deps[i].id_departamento + '">' + deps[i].departamento + '</option>');
+         }
+         $state.trigger('change.select2');
+      })
+      .catch(function(err) { console.error('Error cargando departamentos:', err); });
+
+   $state.on('change', function() {
+      var depId = $state.val();
+      $city.empty().append('<option value=""></option>');
+      $city.prop('disabled', true).trigger('change.select2');
+
+      if (!depId) return;
+
+      fetch('/api/departamentos/' + depId + '/municipios/')
+         .then(function(r) { return r.json(); })
+         .then(function(muns) {
+            $city.empty().append('<option value=""></option>');
+            for (var i = 0; i < muns.length; i++) {
+               $city.append('<option value="' + muns[i].municipio + '">' + muns[i].municipio + '</option>');
+            }
+            $city.prop('disabled', false).trigger('change.select2');
+         });
+   });
+
+   // --- Metodo de pago: solo una tarjeta seleccionada ---
+   var paymentCards = document.querySelectorAll('.tp-checkout-payment-card');
+   paymentCards.forEach(function(card) {
+      var radio = card.querySelector('input[type="radio"]');
+      if (radio.checked) card.classList.add('active');
+      card.addEventListener('click', function() {
+         paymentCards.forEach(function(c) {
+            c.classList.remove('active');
+            c.querySelector('input[type="radio"]').checked = false;
+         });
+         radio.checked = true;
+         card.classList.add('active');
+      });
+   });
 
    renderCheckout();
 })();
