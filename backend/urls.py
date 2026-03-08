@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/footer/',             include('footer.api.urls'), name='footer_api'),
     path('api/',                     include('departamento_municipio.urls')),
     path('api/order/',               include('order.api.urls'), name='order_api'),
+    path('api/metodos-pagos/',       include('metodos_pagos.api.urls'), name='metodos_pagos_api'),
 ]
 
 handler404 = 'store.views.custom_404'

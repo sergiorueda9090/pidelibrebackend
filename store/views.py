@@ -15,6 +15,7 @@ from slider.models import Slider
 from tp_feature_area.models import TpFeatureArea
 from customer.models import Customer, CustomerAddress
 from user.models import User
+from metodos_pagos.models import PaymentMethod
 
 
 def custom_404(request, exception):
@@ -319,10 +320,24 @@ def checkout_view(request):
         customer = getattr(request.user, 'customer', None)
         if customer:
             address = customer.addresses.first()
+
+    # Cargar metodos de pago activos desde la DB
+    payment_methods = PaymentMethod.objects.filter(
+        is_active=True, deleted_at__isnull=True
+    ).order_by('order', 'name')
+
+    # Construir dict de public_keys por provider para JS
+    import json
+    provider_keys = {}
+    for pm in payment_methods:
+        if pm.public_key:
+            provider_keys[pm.provider] = pm.public_key
+
     return render(request, 'store/checkout.html', {
         'customer': customer,
         'address': address,
-        'MERCADOPAGO_PUBLIC_KEY': settings.MERCADOPAGO_PUBLIC_KEY,
+        'payment_methods': payment_methods,
+        'provider_keys_json': json.dumps(provider_keys),
     })
 
 

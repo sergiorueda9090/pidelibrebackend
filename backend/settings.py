@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'footer',
     'departamento_municipio',
     'order',
+    'metodos_pagos',
 ]
 
 MIDDLEWARE = [

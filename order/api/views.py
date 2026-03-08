@@ -16,6 +16,7 @@ from order.services import (
     create_mercadopago_preference,
     handle_mercadopago_webhook,
 )
+from metodos_pagos.models import PaymentMethod
 from .serializers import OrderDetailSerializer, OrderListSerializer
 
 logger = logging.getLogger(__name__)
@@ -84,10 +85,20 @@ def create_order_view(request):
         'total': float(order.total),
     }
 
+    # Buscar metodo de pago activo en la DB
+    pm = PaymentMethod.objects.filter(
+        provider=payment_method, is_active=True, deleted_at__isnull=True
+    ).first()
+
+    if not pm:
+        logger.warning("Metodo de pago no encontrado o inactivo: %s", payment_method)
+        response_data['error_payment'] = f'El metodo de pago "{payment_method}" no esta disponible.'
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
     # Crear preference según pasarela
     if payment_method == 'mercadopago':
         try:
-            mp_result = create_mercadopago_preference(order)
+            mp_result = create_mercadopago_preference(order, access_token=pm.access_token)
             response_data['redirect_url'] = mp_result['init_point']
             response_data['preference_id'] = mp_result['id']
             response_data['sandbox_init_point'] = mp_result['sandbox_init_point']

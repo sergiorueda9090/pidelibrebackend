@@ -195,23 +195,25 @@
                      </div>
                      <div class="tp-checkout-payment">
                         <h4 class="tp-checkout-payment-title" style="font-size:16px;font-weight:600;margin-bottom:15px;">Metodo de Pago</h4>
-                        <div class="tp-checkout-payment-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px;">
-                           <label for="pay_wompi" class="tp-checkout-payment-card active" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
-                              <input type="radio" id="pay_wompi" name="payment" value="wompi" checked style="display:none;">
-                              <img src="{% static 'img/pasarelasPago/wompi.jpg' %}" alt="Wompi" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
-                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">Wompi</span>
+                        {% if payment_methods %}
+                        <div class="tp-checkout-payment-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:10px;">
+                           {% for pm in payment_methods %}
+                           <label for="pay_{{ pm.provider }}" class="tp-checkout-payment-card{% if forloop.first %} active{% endif %}" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
+                              <input type="radio" id="pay_{{ pm.provider }}" name="payment" value="{{ pm.provider }}" {% if forloop.first %}checked{% endif %} style="display:none;">
+                              {% if pm.logo %}
+                              <img src="{{ pm.logo.url }}" alt="{{ pm.name }}" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
+                              {% else %}
+                              <div style="height:40px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+                                 <i class="fa-solid fa-credit-card" style="font-size:24px;color:#666;"></i>
+                              </div>
+                              {% endif %}
+                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">{{ pm.name }}</span>
                            </label>
-                           <label for="pay_mercadopago" class="tp-checkout-payment-card" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
-                              <input type="radio" id="pay_mercadopago" name="payment" value="mercadopago" style="display:none;">
-                              <img src="{% static 'img/pasarelasPago/mercado_pago.png' %}" alt="Mercado Pago" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
-                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">Mercado Pago</span>
-                           </label>
-                           <label for="pay_paypal" class="tp-checkout-payment-card" style="border:2px solid #e0e2e3;border-radius:8px;padding:15px 10px;text-align:center;cursor:pointer;transition:all .2s;">
-                              <input type="radio" id="pay_paypal" name="payment" value="paypal" style="display:none;">
-                              <img src="{% static 'img/pasarelasPago/paypal.png' %}" alt="PayPal" style="max-height:40px;max-width:100%;object-fit:contain;margin-bottom:8px;">
-                              <span style="display:block;font-size:13px;font-weight:600;color:#333;">PayPal</span>
-                           </label>
+                           {% endfor %}
                         </div>
+                        {% else %}
+                        <p style="color:#999;text-align:center;padding:20px 0;">No hay metodos de pago disponibles.</p>
+                        {% endif %}
                      </div>
                      <div class="tp-checkout-agree">
                         <div class="tp-checkout-option">
@@ -451,8 +453,9 @@
       });
    });
 
-   // ── Mercado Pago: Wallet Brick ──────────────────────────────────
-   var MP_PUBLIC_KEY = '{{ MERCADOPAGO_PUBLIC_KEY }}';
+   // ── Claves publicas de pasarelas (dinamicas desde DB) ──────────
+   var PROVIDER_KEYS = {{ provider_keys_json|safe }};
+   var MP_PUBLIC_KEY = PROVIDER_KEYS['mercadopago'] || '';
 
    function renderMercadoPagoBrick(preferenceId) {
       // Ocultar el botón normal y mostrar el contenedor del Wallet Brick

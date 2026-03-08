@@ -211,12 +211,14 @@ def restore_stock(order):
 
 
 # ── Mercado Pago ─────────────────────────────────────────────
-def create_mercadopago_preference(order):
+def create_mercadopago_preference(order, access_token=None):
     """
     Crea una Preference en Mercado Pago y retorna la URL de pago.
+    Si se pasa access_token, se usa ese; si no, fallback a settings.
     """
     import mercadopago
-    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    token = access_token or settings.MERCADOPAGO_ACCESS_TOKEN
+    sdk = mercadopago.SDK(token)
 
     items = []
     for item in order.items.all():
@@ -285,7 +287,14 @@ def handle_mercadopago_webhook(payload):
     resource_id = str(payload.get('data', {}).get('id', ''))
     action = payload.get('action', '')
 
-    sdk = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
+    # Buscar credenciales dinamicas desde DB
+    from metodos_pagos.models import PaymentMethod
+    mp_method = PaymentMethod.objects.filter(
+        provider='mercadopago', is_active=True, deleted_at__isnull=True
+    ).first()
+    mp_token = mp_method.access_token if mp_method else settings.MERCADOPAGO_ACCESS_TOKEN
+
+    sdk = mercadopago.SDK(mp_token)
     result_info = {'event_type': event_type, 'action': action}
 
     # ── payment ──────────────────────────────────────────────
