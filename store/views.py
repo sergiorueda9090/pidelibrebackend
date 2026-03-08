@@ -1,6 +1,7 @@
 import json
 from collections import OrderedDict
 from decimal import Decimal
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Min, Case, When, F, Q, DecimalField
@@ -321,6 +322,21 @@ def checkout_view(request):
     return render(request, 'store/checkout.html', {
         'customer': customer,
         'address': address,
+        'MERCADOPAGO_PUBLIC_KEY': settings.MERCADOPAGO_PUBLIC_KEY,
+    })
+
+
+def checkout_result_view(request):
+    order_number = request.GET.get('order', '')
+    order = None
+    if order_number:
+        from order.models import Order
+        try:
+            order = Order.objects.prefetch_related('items').get(order_number=order_number)
+        except Order.DoesNotExist:
+            pass
+    return render(request, 'store/checkout_result.html', {
+        'order': order,
     })
 
 

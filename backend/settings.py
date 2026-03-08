@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'tp_feature_area',
     'footer',
     'departamento_municipio',
+    'order',
 ]
 
 MIDDLEWARE = [
@@ -195,3 +196,58 @@ AUTH_USER_MODEL = 'user.User'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CARS_ALLOW_CREDENTIALS = True
+
+# ── Mercado Pago ──────────────────────────────────────────────
+MERCADOPAGO_ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN", "")
+MERCADOPAGO_PUBLIC_KEY = os.getenv("MERCADOPAGO_PUBLIC_KEY", "")
+
+# ── URL del sitio (para webhooks y redirects) ─────────────────
+SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+
+# ── CSRF trusted origins (ngrok) ─────────────────────────────
+CSRF_TRUSTED_ORIGINS = [
+    SITE_URL,
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+]
+
+# ── Logging ──────────────────────────────────────────────────
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': LOG_DIR / 'pidelibre.log',
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'order': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+        'store': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['console', 'file'],
+            'level': 'WARNING',
+        },
+    },
+}

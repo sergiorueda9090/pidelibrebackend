@@ -220,7 +220,9 @@
                         </div>
                      </div>
                      <div class="tp-checkout-btn-wrapper">
-                        <button class="tp-checkout-btn w-100" onclick="placeOrder()">Realizar Pedido</button>
+                        <button id="pl-place-order-btn" class="tp-checkout-btn w-100" onclick="placeOrder()">Realizar Pedido</button>
+                        <!-- Contenedor para el botón de Mercado Pago (Wallet Brick) -->
+                        <div id="walletBrick_container" style="display:none;margin-top:10px;"></div>
                      </div>
                   </div>
                </div>
@@ -235,6 +237,8 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- SDK MercadoPago.js para Wallet Brick (Checkout Pro) -->
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script>
 (function() {
    function fmtPrice(n) {
@@ -297,23 +301,99 @@
       }
 
       var firstName = document.getElementById('ch-first-name').value.trim();
-      var lastName = document.getElementById('ch-last-name').value.trim();
-      var address = document.getElementById('ch-address').value.trim();
-      var city = document.getElementById('ch-city').value.trim();
-      var phone = document.getElementById('ch-phone').value.trim();
-      var email = document.getElementById('ch-email').value.trim();
+      var lastName  = document.getElementById('ch-last-name').value.trim();
+      var address   = document.getElementById('ch-address').value.trim();
+      var city      = $('#ch-city').val() || '';
+      var state     = $('#ch-state option:selected').text() || '';
+      var phone     = document.getElementById('ch-phone').value.trim();
+      var email     = document.getElementById('ch-email').value.trim();
 
       if (!firstName || !lastName || !address || !city || !phone || !email) {
          PL.showToast('Completa todos los campos obligatorios.');
          return;
       }
 
-      // TODO: enviar pedido al backend via AJAX cuando exista el endpoint
-      PL.showToast('Pedido realizado con exito. Te contactaremos pronto.');
-      PL.clearCart();
-      setTimeout(function() {
-         window.location.href = '{% url "store:home" %}';
-      }, 2000);
+      var paymentEl = document.querySelector('input[name="payment"]:checked');
+      if (!paymentEl) {
+         PL.showToast('Selecciona un metodo de pago.');
+         return;
+      }
+
+      var shippingEl = document.querySelector('input[name="ch_shipping"]:checked');
+      var shippingCost = shippingEl ? parseInt(shippingEl.value) : 0;
+
+      var cart = PL.getCart();
+      if (cart.length === 0) {
+         PL.showToast('Tu carrito esta vacio.');
+         return;
+      }
+
+      // Deshabilitar botón mientras procesa
+      var btn = document.querySelector('.tp-checkout-btn');
+      btn.disabled = true;
+      btn.textContent = 'Procesando...';
+
+      var payload = {
+         customer: {
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            phone: phone,
+            document_number: (document.getElementById('ch-document').value || '').trim(),
+            address: address,
+            address2: (document.getElementById('ch-address2').value || '').trim(),
+            city: city,
+            state: state !== 'Selecciona un departamento' ? state : '',
+            country: (document.getElementById('ch-country').value || 'Colombia').trim(),
+            postal_code: (document.getElementById('ch-postal').value || '').trim(),
+            notes: (document.getElementById('ch-notes').value || '').trim(),
+         },
+         items: cart,
+         payment_method: paymentEl.value,
+         shipping_cost: shippingCost,
+      };
+
+      fetch('/api/order/create/', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(payload),
+      })
+      .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+      .then(function(res) {
+         if (!res.ok) {
+            PL.showToast(res.data.error || 'Error al procesar el pedido.');
+            btn.disabled = false;
+            btn.textContent = 'Realizar Pedido';
+            return;
+         }
+         console.log('Pedido creado:', res.data);
+         console.log('Respuesta completa:', paymentEl.value);
+         console.log("Preference ID:", res.data.preference_id);
+         //return false;
+         // Mercado Pago: renderizar Wallet Brick con el preference_id
+         if (res.data.preference_id && paymentEl.value === 'mercadopago') {
+            PL.clearCart();
+            renderMercadoPagoBrick(res.data.preference_id);
+            return;
+         }
+
+         // Si hay redirect a pasarela de pago (fallback)
+         if (res.data.redirect_url) {
+            PL.clearCart();
+            window.location.href = res.data.redirect_url;
+            return;
+         }
+
+         // Sin pasarela (o pasarela no configurada): ir a resultado
+         PL.clearCart();
+         window.location.href = '/checkout/resultado/?order=' + res.data.order_number;
+      })
+      .catch(function(err) {
+         console.error('Error:', err);
+         PL.showToast('Error de conexion. Intenta nuevamente.');
+         btn.disabled = false;
+         btn.textContent = 'Realizar Pedido';
+      });
    };
 
    // --- Departamentos y Municipios (Select2 con buscador) ---
@@ -370,6 +450,49 @@
          card.classList.add('active');
       });
    });
+
+   // ── Mercado Pago: Wallet Brick ──────────────────────────────────
+   var MP_PUBLIC_KEY = '{{ MERCADOPAGO_PUBLIC_KEY }}';
+
+   function renderMercadoPagoBrick(preferenceId) {
+      // Ocultar el botón normal y mostrar el contenedor del Wallet Brick
+      var placeBtn = document.getElementById('pl-place-order-btn');
+      var brickContainer = document.getElementById('walletBrick_container');
+      placeBtn.style.display = 'none';
+      brickContainer.style.display = 'block';
+      brickContainer.innerHTML = '<p style="text-align:center;color:#666;padding:10px 0;">Cargando boton de pago...</p>';
+      console.log('MP_PUBLIC_KEY en JS:', MP_PUBLIC_KEY);
+      if (!MP_PUBLIC_KEY) {
+         PL.showToast('Error de configuracion de Mercado Pago.');
+         placeBtn.style.display = 'block';
+         placeBtn.disabled = false;
+         placeBtn.textContent = 'Realizar Pedido';
+         brickContainer.style.display = 'none';
+         return;
+      }
+
+      var mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-CO' });
+      var bricksBuilder = mp.bricks();
+
+      bricksBuilder.create('wallet', 'walletBrick_container', {
+         initialization: {
+            preferenceId: preferenceId,
+         },
+         callbacks: {
+            onReady: function() {
+               // Brick cargado correctamente
+            },
+            onError: function(error) {
+               console.error('MercadoPago Brick error:', error);
+               PL.showToast('Error al cargar el boton de Mercado Pago. Redirigiendo...');
+               // Fallback: redirigir directamente
+               setTimeout(function() {
+                  window.location.href = 'https://www.mercadopago.com.co/checkout/v1/redirect?pref_id=' + preferenceId;
+               }, 1500);
+            },
+         },
+      });
+   }
 
    renderCheckout();
 })();

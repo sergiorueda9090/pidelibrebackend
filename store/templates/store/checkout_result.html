@@ -1,0 +1,114 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}Resultado del Pedido — pidelibre{% endblock %}
+
+{% block content %}
+<main>
+   <section class="breadcrumb__area include-bg pt-100 pb-50">
+      <div class="container">
+         <div class="row">
+            <div class="col-xxl-12">
+               <div class="breadcrumb__content p-relative z-index-1">
+                  <h3 class="breadcrumb__title">Estado del Pedido</h3>
+                  <div class="breadcrumb__list">
+                     <span><a href="{% url 'store:home' %}">Inicio</a></span>
+                     <span>Pedido</span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </section>
+
+   <section class="pb-120">
+      <div class="container">
+         {% if order %}
+         <div class="row justify-content-center">
+            <div class="col-lg-8">
+               <div class="white-bg p-4 p-md-5 text-center" style="border-radius:8px;">
+                  {% if order.status == 'approved' %}
+                     <div style="font-size:60px;color:#28a745;margin-bottom:15px;">&#10004;</div>
+                     <h3 style="color:#28a745;margin-bottom:10px;">¡Pago aprobado!</h3>
+                     <p style="color:#55585b;font-size:16px;">Tu pedido ha sido procesado exitosamente.</p>
+                  {% elif order.status == 'rejected' %}
+                     <div style="font-size:60px;color:#dc3545;margin-bottom:15px;">&#10006;</div>
+                     <h3 style="color:#dc3545;margin-bottom:10px;">Pago rechazado</h3>
+                     <p style="color:#55585b;font-size:16px;">Tu pago no pudo ser procesado. Puedes intentar nuevamente.</p>
+                  {% elif order.status == 'cancelled' %}
+                     <div style="font-size:60px;color:#6c757d;margin-bottom:15px;">&#10006;</div>
+                     <h3 style="color:#6c757d;margin-bottom:10px;">Pedido cancelado</h3>
+                     <p style="color:#55585b;font-size:16px;">Este pedido fue cancelado.</p>
+                  {% else %}
+                     <div style="font-size:60px;color:#ffc107;margin-bottom:15px;">&#9203;</div>
+                     <h3 style="color:#ffc107;margin-bottom:10px;">Pago pendiente</h3>
+                     <p style="color:#55585b;font-size:16px;">Tu pedido fue creado. Estamos esperando la confirmación del pago.</p>
+                  {% endif %}
+
+                  <div style="background:#f8f9fa;border-radius:8px;padding:20px;margin:25px 0;text-align:left;">
+                     <h4 style="font-size:16px;margin-bottom:15px;color:#333;">Resumen del Pedido</h4>
+                     <table style="width:100%;font-size:14px;color:#55585b;">
+                        <tr>
+                           <td style="padding:5px 0;"><strong>Nº Orden:</strong></td>
+                           <td style="text-align:right;">{{ order.order_number }}</td>
+                        </tr>
+                        <tr>
+                           <td style="padding:5px 0;"><strong>Cliente:</strong></td>
+                           <td style="text-align:right;">{{ order.first_name }} {{ order.last_name }}</td>
+                        </tr>
+                        <tr>
+                           <td style="padding:5px 0;"><strong>Email:</strong></td>
+                           <td style="text-align:right;">{{ order.email }}</td>
+                        </tr>
+                        <tr>
+                           <td style="padding:5px 0;"><strong>Método de pago:</strong></td>
+                           <td style="text-align:right;">{{ order.payment_method|title }}</td>
+                        </tr>
+                        <tr><td colspan="2"><hr style="margin:10px 0;border-color:#e0e2e3;"></td></tr>
+                        {% for item in order.items.all %}
+                        <tr>
+                           <td style="padding:4px 0;">{{ item.product_name }} x{{ item.quantity }}</td>
+                           <td style="text-align:right;">${{ item.total|floatformat:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr><td colspan="2"><hr style="margin:10px 0;border-color:#e0e2e3;"></td></tr>
+                        <tr>
+                           <td style="padding:5px 0;">Subtotal</td>
+                           <td style="text-align:right;">${{ order.subtotal|floatformat:0 }}</td>
+                        </tr>
+                        <tr>
+                           <td style="padding:5px 0;">Envío</td>
+                           <td style="text-align:right;">${{ order.shipping_cost|floatformat:0 }}</td>
+                        </tr>
+                        <tr>
+                           <td style="padding:8px 0;"><strong style="font-size:16px;">Total</strong></td>
+                           <td style="text-align:right;"><strong style="font-size:16px;">${{ order.total|floatformat:0 }}</strong></td>
+                        </tr>
+                     </table>
+                  </div>
+
+                  <a href="{% url 'store:home' %}" class="tp-btn">Volver a la Tienda</a>
+               </div>
+            </div>
+         </div>
+         {% else %}
+         <div class="text-center py-5">
+            <p style="color:#767a82;font-size:16px;">No se encontró información del pedido.</p>
+            <a href="{% url 'store:home' %}" class="tp-btn mt-20">Ir a la Tienda</a>
+         </div>
+         {% endif %}
+      </div>
+   </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+   // Limpiar carrito después de compra exitosa
+   (function() {
+      {% if order and order.status != 'rejected' %}
+      PL.clearCart();
+      {% endif %}
+   })();
+</script>
+{% endblock %}
