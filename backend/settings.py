@@ -123,11 +123,11 @@ SIMPLE_JWT = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv("MYSQL_NAME"),
-        'USER': os.getenv("MYSQL_USER"),
-        'PASSWORD': os.getenv("MYSQL_PASSWORD"),
-        'HOST': os.getenv("MYSQL_HOST"),
-        'PORT': os.getenv("MYSQL_PORT"),
+        'NAME': os.getenv("MYSQL_NAME") or os.getenv("mysql_name"),
+        'USER': os.getenv("MYSQL_USER") or os.getenv("mysql_user"),
+        'PASSWORD': os.getenv("MYSQL_PASSWORD") or os.getenv("mysql_password"),
+        'HOST': os.getenv("MYSQL_HOST") or os.getenv("mysql_host"),
+        'PORT': os.getenv("MYSQL_PORT") or os.getenv("mysql_port"),
     }
 }
 
@@ -186,8 +186,13 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR.parent / 'shofy-template' / 'assets',
+    d for d in [
+        BASE_DIR.parent / 'shofy-template' / 'assets',   # local (Windows)
+        BASE_DIR / 'shofy-template' / 'assets',          # Docker (volumen montado)
+    ] if d.is_dir()
 ]
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -205,12 +210,21 @@ MERCADOPAGO_PUBLIC_KEY = os.getenv("MERCADOPAGO_PUBLIC_KEY", "")
 # ── URL del sitio (para webhooks y redirects) ─────────────────
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
 
-# ── CSRF trusted origins (ngrok) ─────────────────────────────
+# ── CSRF trusted origins ─────────────────────────────────────
 CSRF_TRUSTED_ORIGINS = [
     SITE_URL,
+    'https://pidelibre.com',
+    'https://www.pidelibre.com',
+    'https://panel.pidelibre.com',
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
 ]
+
+# ── Seguridad HTTPS (produccion) ────────────────────────────
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
 
 # ── Logging ──────────────────────────────────────────────────
 LOG_DIR = BASE_DIR / 'logs'
